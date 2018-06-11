@@ -1,0 +1,26 @@
+Package: steemr
+Version: 0.0.0
+Title: A Tool For Processing Steem Data 
+Author: Peng Zhao <pzhao@pzhao.net>
+Maintainer: Peng Zhao <pzhao@pzhao.net>
+Depends: R (>= 3.1.0)
+Imports:
+  mongolite,
+  RCurl,
+  XML,
+  rlist,
+  wordcloud,
+  tm,
+  zoo,
+  openair,
+  lattice,
+  VennDiagram
+Suggests:
+Description: Downloading and Analyzing Steem Data
+License: MIT
+URL: https://github.com/pzhaonet/steemr
+BugReports: https://github.com/pzhaonet/steemr/issues
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.0.1
+NeedsCompilation: no
+LazyData: true
