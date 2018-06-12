@@ -236,7 +236,7 @@ post_links <- function(id = 'dapeng', post_number = 3, site = 'steemit.com') {
 #' @export
 #'
 #' @examples
-#' post_df(postlinks = post_links())
+#' post_df(c('cn/@dapeng/xuer-sale', 'utopian-io/@dapeng/steemg-four-more'))
 post_df <- function(postlinks) {
   i <- 1
   postlink <- postlinks[i]

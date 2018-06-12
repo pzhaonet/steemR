@@ -16,5 +16,5 @@ a dataframe of the detailed information of the given posts
 Get the detailed information of given posts from steemdb.com
 }
 \examples{
-post_df(postlinks = post_links())
+post_df(c("cn/@dapeng/xuer-sale", "utopian-io/@dapeng/steemg-four-more"))
 }
