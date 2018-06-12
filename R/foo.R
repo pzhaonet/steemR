@@ -1,69 +1,3 @@
-#' Download data from steemdata.com
-#'
-#' @param method character. specifying what report.
-#' - A: Account Report;
-#' - P: Post Report;
-#' - V: Voter Report
-#' @param A character. The name of the account for account report
-#' @param P character. The name of the account for post report
-#' @param V character. The name of the account for voter report
-#'
-#' @return a list
-#' @export
-#'
-#' @examples
-#' info()
-info <- function(method = c('A', 'P', 'V'), # A: Account Report; P: Post Report; V: Voter Report
-                 A = '',
-                 P = '',
-                 V = ''){
-  method <- match.arg(method)
-  myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
-
-  Sys.setenv(TZ='GMT')
-  datatime <- format(as.POSIXct(Sys.time()))
-
-  ### AccountOperations # Operations of an ID
-  accountoperations <- mongo(collection = "AccountOperations", url = myurl)
-  myao <- accountoperations$find(paste0('{"account" : "', A, '"}'))
-
-  ### Accounts # profile of an ID
-  accounts <- mongo(collection = "Accounts", url = myurl)
-  myaccounts <- accounts$find(paste0('{"name" : "', A, '"}'))
-
-  ### Comments # time comsuming!
-  if (method == 'P') { # switch on only if 'P'
-    comments <- mongo(collection = "Comments", url = myurl)
-    mycomments <- comments$find(paste0('{"root_identifier" : "', P, '"}'))
-    # mycomments <- I(lapply(P, function(P) comments$find(paste0('{"root_identifier" : "', P, '"}')))) # query the comments of multiple given posts
-  }
-
-  # ### Operations # time comsuming!
-  # operations <- mongo(collection = "Operations", url = myurl)
-  # myoperations <- operations$find(paste0('{"worker_account" : "', id, '"}'))
-
-  ### posts
-  posts <- mongo(collection = "Posts", url = myurl)
-  myposts <- posts$find(paste0('{"author" : "', A, '"}'))
-
-  ### PriceHistory
-  # pricehistory <- mongo(collection = "PriceHistory", url = myurl)
-  # mypricehistory <- pricehistory$find()
-
-  ### stats
-  stats <- mongo(collection = "stats", url = myurl)
-  mystats <- stats$find()
-
-  info <- list(method = method,
-               datatime = datatime,
-               accountoperations = myao,
-               accounts = myaccounts,
-               comments = ifelse(method == 'P', mycomments, NA),
-               posts = myposts,
-               stats = mystats)
-  return(info)
-}
-
 #' Get an ID's detailed info
 #'
 #' @param id character. Steem ID without '@'
@@ -73,8 +7,8 @@ info <- function(method = c('A', 'P', 'V'), # A: Account Report; P: Post Report;
 #' @export
 #'
 #' @examples
-#' followlist()
-idinfo <- function(id = 'dapeng', method = c('steemdb.com', 'steemdata.com')){
+#' follower()
+id_info <- function(id = 'dapeng', method = c('steemdb.com', 'steemsql')){
   method <- match.arg(method)
   if (method == 'steemdb.com') {
     ulr <-   paste0("https://steemdb.com/@", id,  "/data")
@@ -83,24 +17,26 @@ idinfo <- function(id = 'dapeng', method = c('steemdb.com', 'steemdata.com')){
     info_ls <- as.list(info[,2])
     names(info_ls) <- info[, 1]
     return(info_ls)
-  } else if(method == 'steemdata.com') {
-    myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
-    Sys.setenv(TZ='GMT')
-    accounts <- mongo(collection = "Accounts", url = myurl)
-    return(accounts$find(paste0('{"name" : "', id, '"}')))
+  # } else if(method == 'steemdata.com') {
+  #   myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
+  #   Sys.setenv(TZ='GMT')
+  #   accounts <- mongo(collection = "Accounts", url = myurl)
+  #   return(accounts$find(paste0('{"name" : "', id, '"}')))
+  } else if(method == 'steemsql.com') {
+    return(list('unavailable yet. coming soon......'))
   }
 }
 
-
 #' Get a name list of an ID's followers and following
 #' @param id character without '@'
+#' @param method the server to get data
 #'
 #' @return a name list of an ID's followers and following
 #' @export
 #'
 #' @examples
-#' followlist()
-followlist <- function(id = 'dapeng', method = c('steemdb.com', 'steemdata.com')){
+#' follower()
+follower <- function(id = 'dapeng', method = c('steemdb.com', 'steemdata.com')){
   method <- match.arg(method)
   # from steemdb.com
   if (method == 'steemdb.com') {
@@ -109,12 +45,12 @@ followlist <- function(id = 'dapeng', method = c('steemdb.com', 'steemdata.com')
       y <- substr(y, 2, nchar(y) - 1)
       strsplit(y, ',')[[1]]
     }
-    info_ls <- idinfo(id = id, method = method)
+    info_ls <- id_info(id = id, method = method)
     return(list(followers = clearferfing(info_ls$followers),
                 following = clearferfing(info_ls$following)))
   } else if(method == 'steemdata.com') {
   # from steemdata.com
-  myaccounts <- idinfo(id = id, method = method)
+  myaccounts <- id_info(id = id, method = method)
   return(list(followers = myaccounts$followers[[1]],
               following = myaccounts$following[[1]]))
   }
@@ -148,8 +84,8 @@ following <- function(id = 'dapeng'){
 #' @export
 #'
 #' @examples
-#' follower()
-follower <- function(id = 'dapeng'){
+#' follower_df()
+follower_df <- function(id = 'dapeng'){
   x <- paste0("https://steemdb.com/@", id,  "/followers/whales")
   theurl <- RCurl::getURL(x, .opts = list(ssl.verifypeer = FALSE) )
   if (theurl == '') return(data.frame())
@@ -161,7 +97,6 @@ follower <- function(id = 'dapeng'){
   fer$Account <- substr(fer$Account, regexpr('\n', fer$Account)[1] + 7, nchar(fer$Account))
   fer$unit <- substr(fer$Vests, nchar(fer$Vests) - 1, nchar(fer$Vests))
   fer$vests <- substr(fer$Vests, 1, nchar(fer$Vests) - 3)
-  # matrix(unlist(strsplit(fer$Vests, '聽')), ncol = 2, byrow = TRUE)
   unitconvert <- function(x){
     switch(x,
            'GV' = 10 ^ 9,
@@ -196,7 +131,7 @@ follower <- function(id = 'dapeng'){
 }
 
 
-#' Voter report based on steemdb.com
+#' Vote report based on steemdb.com
 #'
 #' @param post complete link of a post on steemit
 #'
@@ -232,7 +167,7 @@ idlink <- function(id = 'dapeng') {
 }
 
 
-#' Get the complete info of a given post on steemdb.com
+#' Get the complete info of a single given post on steemdb.com
 #'
 #' @param postlink character. the complete hyperlink of a post on steemdb.com
 #' @param selected logic. Whether return only selected info
@@ -243,8 +178,8 @@ idlink <- function(id = 'dapeng') {
 #' @export
 #'
 #' @examples
-#' post()
-post <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdown',
+#' post_info()
+post_info <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdown',
                  selected = FALSE,
                  newline = FALSE,
                  oldcolname) {
@@ -273,7 +208,7 @@ post <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdown',
   if (selected) return(postdatat[, c('category', 'json_metadata', 'net_votes', 'total_payout_value', 'created', 'active_votes', 'title', 'last_reply', 'edit')]) else return(postdatat)
 }
 
-#' Obtain an ID's post hyperlinks from steemdb.com
+#' Obtain an ID's complete post hyperlinks from steemdb.com
 #'
 #' @param id character without '@'
 #' @param post_number numeric or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.
@@ -282,8 +217,8 @@ post <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdown',
 #' @export
 #'
 #' @examples
-#' post_id()
-postlink_id <- function(id = 'dapeng', post_number = 3) {
+#' post_links()
+post_links <- function(id = 'dapeng', post_number = 3) {
   url <-   paste0("https://steemdb.com/@", id,  "/posts")
   postpage <- readLines(url, encoding = 'UTF-8')
   postlinks <- postpage[grep('one wide mobile hidden column', postpage) + 8]
@@ -300,17 +235,17 @@ postlink_id <- function(id = 'dapeng', post_number = 3) {
 #' @export
 #'
 #' @examples
-#' post_df()
+#' post_df(postlinks = post_links())
 post_df <- function(postlinks) {
   i <- 1
   postlink <- postlinks[i]
   print(paste(i, postlink))
-  mypost <- post(postlink)
+  mypost <- post_info(postlink)
   oldcolname <- names(mypost)
   for (i in 2:length(postlinks)) {
     print(paste(i, postlink))
     postlink <- postlinks[i]
-    newline <- post(postlink, newline = TRUE, oldcolname = oldcolname)
+    newline <- post_info(postlink, newline = TRUE, oldcolname = oldcolname)
     # ncol(mypost)
     # ncol(newline)
     # names(newline)[!(names(newline) %in% names(mypost))]
@@ -330,7 +265,7 @@ post_df <- function(postlinks) {
 #'
 #' @examples
 #' post_id()
-post_dfid <- function(id = 'dapeng', post_number = 3) {
-  postlinks <- postlink_id(id = id, post_number = post_number)
+post_id <- function(id = 'dapeng', post_number = 3) {
+  postlinks <- post_links(id = id, post_number = post_number)
   return(post_df(postlinks = postlinks))
 }
