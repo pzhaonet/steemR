@@ -4,12 +4,14 @@
 \alias{post_links}
 \title{Obtain an ID's complete post hyperlinks from steemdb.com}
 \usage{
-post_links(id = "dapeng", post_number = 3)
+post_links(id = "dapeng", post_number = 3, site = "steemit.com")
 }
 \arguments{
 \item{id}{character without '@'}
 
 \item{post_number}{numeric or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.}
+
+\item{site}{the site of the steem web UI}
 }
 \value{
 character. an ID's post hyperlinks.

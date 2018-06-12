@@ -4,8 +4,8 @@
 \alias{post_info}
 \title{Get the complete info of a single given post on steemdb.com}
 \usage{
-post_info(postlink = "https://steemdb.com/cn/@dapeng/steemit-markdown", 
-    selected = FALSE, newline = FALSE, oldcolname)
+post_info(postlink = "cn/@dapeng/steemit-markdown", selected = FALSE, newline = FALSE, 
+    oldcolname)
 }
 \arguments{
 \item{postlink}{character. the complete hyperlink of a post on steemdb.com}

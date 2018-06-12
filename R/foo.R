@@ -179,16 +179,16 @@ idlink <- function(id = 'dapeng') {
 #'
 #' @examples
 #' post_info()
-post_info <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdown',
+post_info <- function(postlink = 'cn/@dapeng/steemit-markdown',
                  selected = FALSE,
                  newline = FALSE,
                  oldcolname) {
-  postedit <- readLines(postlink, encoding = 'UTF-8')
+  postedit <- readLines(paste0('https://steemdb.com/', postlink), encoding = 'UTF-8')
   postedit <- postedit[grep('Edit History', postedit)]
   postedit <- strsplit(postedit, 'Edit History \\(')[[1]][2]
   postedit <- as.numeric(strsplit(postedit, '\\)')[[1]][1])
 
-  postdatalink <- paste0(postlink, '/data')
+  postdatalink <- paste0('https://steemdb.com/', postlink, '/data')
 
   theurl <- RCurl::getURL(postdatalink, .opts = list(ssl.verifypeer = FALSE) )
   postdataraw <- XML::readHTMLTable(theurl, stringsAsFactors = FALSE, encoding = 'UTF-8')#[[1]]
@@ -212,19 +212,20 @@ post_info <- function(postlink = 'https://steemdb.com/cn/@dapeng/steemit-markdow
 #'
 #' @param id character without '@'
 #' @param post_number numeric or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.
+#' @param site the site of the steem web UI
 #'
 #' @return character. an ID's post hyperlinks.
 #' @export
 #'
 #' @examples
 #' post_links()
-post_links <- function(id = 'dapeng', post_number = 3) {
+post_links <- function(id = 'dapeng', post_number = 3, site = 'steemit.com') {
   url <-   paste0("https://steemdb.com/@", id,  "/posts")
   postpage <- readLines(url, encoding = 'UTF-8')
   postlinks <- postpage[grep('one wide mobile hidden column', postpage) + 8]
   postlinks <- sapply(strsplit(postlinks, '"'), function(x) x[2])
   if ((!is.na(post_number)) & (length(postlinks) > post_number)) postlinks <- postlinks[1:post_number]
-  return(paste0('https://steemdb.com', postlinks))
+  return(paste0('https://', site, postlinks))
 }
 
 #' Get the detailed information of given posts from steemdb.com
@@ -266,6 +267,7 @@ post_df <- function(postlinks) {
 #' @examples
 #' post_id()
 post_id <- function(id = 'dapeng', post_number = 3) {
-  postlinks <- post_links(id = id, post_number = post_number)
+  postlinks <- post_links(id = id, post_number = post_number, site = 'steemdb.com')
+  postlinks <- gsub('https://steemdb.com/', '', postlinks)
   return(post_df(postlinks = postlinks))
 }
