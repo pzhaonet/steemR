@@ -11,7 +11,7 @@
 #' @examples
 #' id_info()
 id_info <- function(id = 'dapeng',
-                    method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
+                    method = c('steemdb.com', 'steemsql.com', 'appbase_api', 'steemdata.com'),
                     sql_id,
                     sql_password){
   method <- match.arg(method)
@@ -28,6 +28,9 @@ id_info <- function(id = 'dapeng',
     cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     sql_query <- paste0("SELECT * FROM Accounts WHERE name = '", id, "'")
     info_df <- RODBC::sqlQuery(cn, sql_query, stringsAsFactors = FALSE)
+    return(info_df)
+  } else if(method == 'appbase_api') {
+    info_df <- steemr2::getAccount(username = id)
     return(info_df)
   } else if(method == 'steemdata.com') {
     myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
@@ -377,7 +380,7 @@ post_df <- function(postlinks = c('cn/@dapeng/xuer-sale',
 #' @examples
 #' post_id()
 post_id <- function(id = 'dapeng',
-                    method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
+                    method = c('steemdb.com', 'steemsql.com', 'appbase_api', 'steemdata.com'),
                     sql_id,
                     sql_password,
                     post_number = NA) {
@@ -403,6 +406,8 @@ post_id <- function(id = 'dapeng',
     mypost_id <- RODBC::sqlQuery(channel = cn,
                                  query = post_query,
                                  stringsAsFactors = FALSE)
+  } else if(method == 'appbase_api') {
+    mypost_id <- steemr2::getBlog(username = id)
   }
   return(mypost_id)
 }
