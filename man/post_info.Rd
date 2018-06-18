@@ -4,17 +4,24 @@
 \alias{post_info}
 \title{Get the complete info of a single given post on steemdb.com}
 \usage{
-post_info(postlink = "cn/@dapeng/steemit-markdown", selected = FALSE, newline = FALSE, 
-    oldcolname)
+post_info(postlink = "cn/@dapeng/steemit-markdown", method = c("steemdb.com", 
+    "steemsql.com", "steemdata.com"), sql_id, sql_password, selected = FALSE, 
+    newline = FALSE, oldcolname)
 }
 \arguments{
-\item{postlink}{character. the complete hyperlink of a post on steemdb.com}
+\item{postlink}{A character of the link to a post}
 
-\item{selected}{logic. Whether return only selected info}
+\item{method}{A character string of the Steem data server to connect.}
 
-\item{newline}{logic. Whether rbind the returned dataframe with an existing one}
+\item{sql_id}{A character string of the steemsql id. Only valid when \code{method == 'steemsql'}}
 
-\item{oldcolname}{character. If newline == TRUE, the returned dataframe is ordered accoring to oldcolname}
+\item{sql_password}{A character string of the steemsql passwordid. Only valid when \code{method == 'steemsql'}}
+
+\item{selected}{A logic value of whether return only selected info}
+
+\item{newline}{A logic value of whether rbind the returned dataframe with an existing one}
+
+\item{oldcolname}{A character string. If newline == TRUE, the returned dataframe is ordered accoring to oldcolname}
 }
 \value{
 a dataframe

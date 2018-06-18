@@ -4,15 +4,20 @@
 \alias{id_info}
 \title{Get an ID's detailed info}
 \usage{
-id_info(id = "dapeng", method = c("steemdb.com", "steemsql"))
+id_info(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
+    sql_id, sql_password)
 }
 \arguments{
-\item{id}{character. Steem ID without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 
-\item{method}{character. Steem data server.}
+\item{method}{A character string of the Steem data server to connect.}
+
+\item{sql_id}{A character string of the steemsql id. Only valid when \code{method == 'steemsql'}}
+
+\item{sql_password}{A character string of the steemsql passwordid. Only valid when \code{method == 'steemsql'}}
 }
 \value{
-a dataframe of an ID's detailed info
+A list or a dataframe of an ID's detailed info
 }
 \description{
 Get an ID's detailed info

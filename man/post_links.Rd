@@ -2,22 +2,29 @@
 % Please edit documentation in R/steemr.R
 \name{post_links}
 \alias{post_links}
-\title{Obtain an ID's complete post hyperlinks from steemdb.com}
+\title{Obtain an ID's post hyperlinks}
 \usage{
-post_links(id = "dapeng", post_number = 3, site = "steemit.com")
+post_links(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
+    sql_id, sql_password, post_number = 3, site = "steemit.com")
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 
-\item{post_number}{numeric or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.}
+\item{method}{A character string of the Steem data server to connect.}
 
-\item{site}{the site of the steem web UI}
+\item{sql_id}{A character string of the steemsql id. Only valid when \code{method == 'steemsql'}}
+
+\item{sql_password}{A character string of the steemsql passwordid. Only valid when \code{method == 'steemsql'}}
+
+\item{post_number}{A numeric value or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.}
+
+\item{site}{A character string of the site of the steem web UI}
 }
 \value{
-character. an ID's post hyperlinks.
+A character string vector of an ID's post hyperlinks.
 }
 \description{
-Obtain an ID's complete post hyperlinks from steemdb.com
+Obtain an ID's post hyperlinks
 }
 \examples{
 post_links()

@@ -4,15 +4,22 @@
 \alias{post_id}
 \title{Obtain an ID's post detailed info from steemdb.com}
 \usage{
-post_id(id = "dapeng", post_number = 3)
+post_id(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
+    sql_id, sql_password, post_number = NA)
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 
-\item{post_number}{numeric or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.}
+\item{method}{A character string of the Steem data server to connect.}
+
+\item{sql_id}{A character string of the steemsql id. Only valid when \code{method == 'steemsql'}}
+
+\item{sql_password}{A character string of the steemsql passwordid. Only valid when \code{method == 'steemsql'}}
+
+\item{post_number}{A numeric value or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.}
 }
 \value{
-data frame. an ID's post detailed info.
+A data frame of an ID's post detailed info.
 }
 \description{
 Obtain an ID's post detailed info from steemdb.com

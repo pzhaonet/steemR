@@ -4,15 +4,20 @@
 \alias{follower}
 \title{Get a name list of an ID's followers and following}
 \usage{
-follower(id = "dapeng", method = c("steemdb.com", "steemdata.com"))
+follower(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
+    sql_id, sql_password)
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 
-\item{method}{the server to get data}
+\item{method}{A character string of the Steem data server to connect.}
+
+\item{sql_id}{A character string of the steemsql id. Only valid when \code{method == 'steemsql'}}
+
+\item{sql_password}{A character string of the steemsql passwordid. Only valid when \code{method == 'steemsql'}}
 }
 \value{
-a name list of an ID's followers and following
+A name list of an ID's followers and following
 }
 \description{
 Get a name list of an ID's followers and following

@@ -7,10 +7,10 @@
 idlink(id = "dapeng")
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 }
 \value{
-a character
+A character string of the hyperlink to the Steem id.
 }
 \description{
 Convert an id from a character to html hyperlink

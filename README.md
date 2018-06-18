@@ -68,6 +68,7 @@ More functions are coming soon. Have fun!
 
 ## Updates
 
+    2018-06-18. v0.0.5. Support SteemSQL and SteemData query. Documentation improved.
     2018-06-12. v0.0.1. A bug of the hyperlinks was fixed.
     2018-06-11. v0.0.0. A preliminary version.
 

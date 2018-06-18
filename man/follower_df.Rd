@@ -7,7 +7,7 @@
 follower_df(id = "dapeng")
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 }
 \value{
 character a dataframe of an ID's followers' info

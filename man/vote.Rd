@@ -2,18 +2,18 @@
 % Please edit documentation in R/steemr.R
 \name{vote}
 \alias{vote}
-\title{Vote report based on steemdb.com}
+\title{A post's vote report based on steemdb.com}
 \usage{
 vote(post = "https://steemit.com/cn/@dapeng/steemit-markdown")
 }
 \arguments{
-\item{post}{complete link of a post on steemit}
+\item{post}{A character string of the complete link of a post on steemit}
 }
 \value{
-a dataframe of a post's voter information
+A dataframe of a post's voter information
 }
 \description{
-Vote report based on steemdb.com
+A post's vote report based on steemdb.com
 }
 \examples{
 vote()

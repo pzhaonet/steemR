@@ -7,10 +7,10 @@
 following(id = "dapeng")
 }
 \arguments{
-\item{id}{character without '@'}
+\item{id}{A character string of a Steem ID without '@'.}
 }
 \value{
-character a dataframe of an ID's following info
+A dataframe of an ID's following info
 }
 \description{
 The id list of an id's following  from steemdb.com
