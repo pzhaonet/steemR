@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' follower()
+#' id_info()
 id_info <- function(id = 'dapeng', method = c('steemdb.com', 'steemsql')){
   method <- match.arg(method)
   if (method == 'steemdb.com') {
