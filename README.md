@@ -14,9 +14,18 @@ steemr is an open source R package for playing with Steem data in the R environm
 ### Installation
 
 ```
+# From CRAN
+install.packages('steemr')
+# Or from github repo
 install.packages('devtools')
 devtools::install_github('pzhaonet/steemr')
 library('steemr')
+```
+
+If the user would like to use the `method = 'appbase_api'`, then the package 'pzhaonet/steemr2', forked from 'kharoof/steemR', must be installed.
+
+```
+devtools::install_github('pzhaonet/steemr2')
 ```
 
 ### Examples 
@@ -61,16 +70,18 @@ post_df(c('cn/@dapeng/xuer-sale',
 #### Get an ID's posts with complete information
 
 ```{r}
-post_id(id = 'dapeng', post_number = 10)
+post_id(id = 'dapeng', method = 'appbase_api')
 ```
 
 More functions are coming soon. Have fun!
 
 ## Updates
 
-    2018-06-18. v0.0.5. Support SteemSQL and SteemData query. Documentation improved.
-    2018-06-12. v0.0.1. A bug of the hyperlinks was fixed.
-    2018-06-11. v0.0.0. A preliminary version.
+- 2018-06-20. v0.0.6. Support AppBase API connection. `hourrose()` added.
+- 2018-06-19. On [CRAN](https://CRAN.R-project.org/package=steemr).
+- 2018-06-18. v0.0.5. Support SteemSQL and SteemData query. Documentation improved.
+- 2018-06-12. v0.0.1. A bug of the hyperlinks was fixed.
+- 2018-06-11. v0.0.0. A preliminary version.
 
 ## License
 

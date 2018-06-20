@@ -3,6 +3,7 @@
 export(follower)
 export(follower_df)
 export(following)
+export(hourrose)
 export(id_info)
 export(idlink)
 export(post_df)

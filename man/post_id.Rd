@@ -4,8 +4,8 @@
 \alias{post_id}
 \title{Obtain an ID's post detailed info from steemdb.com}
 \usage{
-post_id(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
-    sql_id, sql_password, post_number = NA)
+post_id(id = "dapeng", method = c("steemdb.com", "steemsql.com", "appbase_api", 
+    "steemdata.com"), sql_id, sql_password, post_number = NA)
 }
 \arguments{
 \item{id}{A character string of a Steem ID without '@'.}

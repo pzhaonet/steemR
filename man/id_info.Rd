@@ -4,8 +4,8 @@
 \alias{id_info}
 \title{Get an ID's detailed info}
 \usage{
-id_info(id = "dapeng", method = c("steemdb.com", "steemsql.com", "steemdata.com"), 
-    sql_id, sql_password)
+id_info(id = "dapeng", method = c("steemdb.com", "steemsql.com", "appbase_api", 
+    "steemdata.com"), sql_id, sql_password)
 }
 \arguments{
 \item{id}{A character string of a Steem ID without '@'.}
