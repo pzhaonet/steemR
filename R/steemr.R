@@ -1,19 +1,34 @@
+#' Open Connections to the SteemSQL server
+#'
+#' @param sql_id A character string of the SteemSQL ID.
+#' @param sql_password A character string of the SteemSQL password.
+#'
+#' @return A connection to the SeemSQL server
+#' @export
+#'
+#' @examples steemsql_connection()
+steemsql_connection <- function(sql_id = NA,
+                                sql_password = NA){
+  sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
+                           sql_id, ";pwd=", sql_password)
+  cn <- RODBC::odbcDriverConnect(connection = sql_connection)
+  return(cn)
+}
+
 #' Get an ID's detailed info
 #'
 #' @param id A character string of a Steem ID without '@'.
+#' @param steemsql_connection A connection to the SteemSQL server.
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
 #'
 #' @return A list or a dataframe of an ID's detailed info
 #' @export
 #'
 #' @examples
-#' id_info()
-id_info <- function(id = 'dapeng',
+#' id_info(id = 'dapeng')
+id_info <- function(id = NA,
                     method = c('steemdb.com', 'steemsql.com', 'appbase_api', 'steemdata.com'),
-                    sql_id,
-                    sql_password){
+                    steemsql_connection){
   method <- match.arg(method)
   if (method == 'steemdb.com') {
     ulr <-   paste0("https://steemdb.com/@", id,  "/data")
@@ -23,11 +38,8 @@ id_info <- function(id = 'dapeng',
     names(info_ls) <- info[, 1]
     return(info_ls)
   } else if(method == 'steemsql.com') {
-    sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
-                             sql_id, ";pwd=", sql_password)
-    cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     sql_query <- paste0("SELECT * FROM Accounts WHERE name = '", id, "'")
-    info_df <- RODBC::sqlQuery(cn, sql_query, stringsAsFactors = FALSE)
+    info_df <- RODBC::sqlQuery(steemsql_connection, sql_query, stringsAsFactors = FALSE)
     return(info_df)
   } else if(method == 'appbase_api') {
     info_df <- steemr2::getAccount(username = id)
@@ -43,18 +55,16 @@ id_info <- function(id = 'dapeng',
 #' Get a name list of an ID's followers and following
 #' @param id A character string of a Steem ID without '@'.
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
+#' @param steemsql_connection A connection to the SteemSQL server.
 #'
 #' @return A name list of an ID's followers and following
 #' @export
 #'
 #' @examples
-#' follower()
-follower <- function(id = 'dapeng',
+#' follower('dapeng')
+follower <- function(id = NA,
                      method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
-                     sql_id,
-                     sql_password){
+                     steemsql_connection){
   method <- match.arg(method)
   # from steemdb.com
   if (method == 'steemdb.com') {
@@ -67,17 +77,14 @@ follower <- function(id = 'dapeng',
     follow_ls <- list(followers = clearferfing(info_ls$followers),
                       following = clearferfing(info_ls$following))
   } else if(method == 'steemsql.com') {
-    sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
-                             sql_id, ";pwd=", sql_password)
-    cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     follower_query <- paste0("SELECT * FROM Followers WHERE following = '",
                              id, "'")
-    followers <- RODBC::sqlQuery(channel = cn,
+    followers <- RODBC::sqlQuery(channel = steemsql_connection,
                                 query = follower_query,
                                 stringsAsFactors = FALSE)[, 'follower']
     following_query <- paste0("SELECT * FROM Followers WHERE follower = '",
                               id, "'")
-    followings <- RODBC::sqlQuery(channel = cn,
+    followings <- RODBC::sqlQuery(channel = steemsql_connection,
                                 query = following_query,
                                 stringsAsFactors = FALSE)[, 'following']
     follow_ls <- list(followers = followers,
@@ -99,8 +106,8 @@ follower <- function(id = 'dapeng',
 #' @export
 #'
 #' @examples
-#' following()
-following <- function(id = 'dapeng'){
+#' following('dapeng')
+following <- function(id = NA){
   y <- paste0('https://steemdb.com/@', id, '/following')
   theurl <- RCurl::getURL(y,.opts = list(ssl.verifypeer = FALSE) )
   fing <- XML::readHTMLTable(theurl, stringsAsFactors = FALSE)[[1]]
@@ -119,8 +126,8 @@ following <- function(id = 'dapeng'){
 #' @export
 #'
 #' @examples
-#' follower_df()
-follower_df <- function(id = 'dapeng'){
+#' follower_df('dapeng')
+follower_df <- function(id = NA){
   x <- paste0("https://steemdb.com/@", id,  "/followers/whales")
   theurl <- RCurl::getURL(x, .opts = list(ssl.verifypeer = FALSE) )
   if (theurl == '') return(data.frame())
@@ -173,8 +180,8 @@ follower_df <- function(id = 'dapeng'){
 #' @export
 #'
 #' @examples
-#' vote()
-vote <- function(post = 'https://steemit.com/cn/@dapeng/steemit-markdown'){
+#' vote('https://steemit.com/cn/@dapeng/steemit-markdown')
+vote <- function(post = NA){
   y <- paste0(post, '/votes')
   y <- gsub('steemit.com', 'steemdb.com', y)
   theurl <- RCurl::getURL(y, .opts = list(ssl.verifypeer = FALSE) )
@@ -194,8 +201,8 @@ vote <- function(post = 'https://steemit.com/cn/@dapeng/steemit-markdown'){
 #' @export
 #'
 #' @examples
-#' idlink()
-idlink <- function(id = 'dapeng') {
+#' idlink('dapeng')
+idlink <- function(id = NA) {
   paste0('<a href="https://steemit.com/@', id, '">@', id, '</a>')
 }
 
@@ -204,8 +211,7 @@ idlink <- function(id = 'dapeng') {
 #'
 #' @param postlink A character of the link to a post
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
+#' @param steemsql_connection A connection to the SteemSQL server.
 #' @param selected A logic value of whether return only selected info
 #' @param newline A logic value of whether rbind the returned dataframe with an existing one
 #' @param oldcolname A character string. If newline == TRUE, the returned dataframe is ordered accoring to oldcolname
@@ -214,11 +220,10 @@ idlink <- function(id = 'dapeng') {
 #' @export
 #'
 #' @examples
-#' post_info()
-post_info <- function(postlink = 'cn/@dapeng/steemit-markdown',
+#' post_info('cn/@dapeng/steemit-markdown')
+post_info <- function(postlink = NA,
                       method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
-                      sql_id,
-                      sql_password,
+                      steemsql_connection,
                       selected = FALSE,
                       newline = FALSE,
                       oldcolname) {
@@ -261,13 +266,10 @@ post_info <- function(postlink = 'cn/@dapeng/steemit-markdown',
     }
   } else if(method == 'steemsql.com') {
     post_author <- gsub(pattern = '@', '', strsplit(postlink, '/')[[1]][2])
-    sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
-                             sql_id, ";pwd=", sql_password)
-    cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     sql_query <- paste0("SELECT * FROM Comments WHERE author = '", post_author,
                         "' AND url = '/", postlink,
                         "' AND depth = 0")
-    postdatat <- sqlQuery(cn, sql_query, stringsAsFactors = FALSE)
+    postdatat <- sqlQuery(steemsql_connection, sql_query, stringsAsFactors = FALSE)
     # get tags. not done yet.
     tags <- lapply(postdatat$json_metadata, function(x) {
         if (sum(nchar(x) == 0)) return(NA)
@@ -282,8 +284,7 @@ post_info <- function(postlink = 'cn/@dapeng/steemit-markdown',
 #'
 #' @param id A character string of a Steem ID without '@'.
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
+#' @param steemsql_connection A connection to the SteemSQL server.
 #' @param post_number A numeric value or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.
 #' @param site A character string of the site of the steem web UI
 #'
@@ -291,11 +292,10 @@ post_info <- function(postlink = 'cn/@dapeng/steemit-markdown',
 #' @export
 #'
 #' @examples
-#' post_links()
-post_links <- function(id = 'dapeng',
+#' post_links('dapeng')
+post_links <- function(id = NA,
                        method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
-                       sql_id,
-                       sql_password,
+                       steemsql_connection,
                        post_number = 3,
                        site = 'steemit.com') {
   method <- match.arg(method)
@@ -309,9 +309,6 @@ post_links <- function(id = 'dapeng',
     postlinks <- postlinks[1:post_number]
   return(paste0('https://', site, postlinks))
   } else if(method == 'steemsql.com') {
-    sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
-                             sql_id, ";pwd=", sql_password)
-    cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     post_query <- paste0("SELECT url
                             FROM Comments
                             WHERE
@@ -320,7 +317,7 @@ post_links <- function(id = 'dapeng',
                               depth = 0
                             ORDER by
                               created")
-    postlinks <- RODBC::sqlQuery(channel = cn,
+    postlinks <- RODBC::sqlQuery(channel = steemsql_connection,
                                  query = post_query,
                                  stringsAsFactors = FALSE)
     return(paste0('https://', site, unlist(postlinks)))
@@ -331,19 +328,16 @@ post_links <- function(id = 'dapeng',
 #'
 #' @param postlinks A character string of hyperlinks to target posts
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
+#' @param steemsql_connection A connection to the SteemSQL server.
 #'
 #' @return a dataframe of the detailed information of the given posts
 #' @export
 #'
 #' @examples
-#' post_df()
-post_df <- function(postlinks = c('cn/@dapeng/xuer-sale',
-                                  'utopian-io/@dapeng/steemg-four-more'),
+#' post_df(c('cn/@dapeng/xuer-sale', 'utopian-io/@dapeng/steemg-four-more'))
+post_df <- function(postlinks = NA,
                     method = c('steemdb.com', 'steemsql.com', 'steemdata.com'),
-                    sql_id,
-                    sql_password) {
+                    steemsql_connection) {
   method <- match.arg(method)
   # from steemdb.com
   if (method == 'steemdb.com') {
@@ -376,19 +370,17 @@ post_df <- function(postlinks = c('cn/@dapeng/xuer-sale',
 #'
 #' @param id A character string of a Steem ID without '@'.
 #' @param method A character string of the Steem data server to connect.
-#' @param sql_id A character string of the steemsql id. Only valid when `method == 'steemsql'`
-#' @param sql_password A character string of the steemsql passwordid. Only valid when `method == 'steemsql'`
+#' @param steemsql_connection A connection to the SteemSQL server.
 #' @param post_number A numeric value or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.
 #'
 #' @return A data frame of an ID's post detailed info.
 #' @export
 #'
 #' @examples
-#' post_id()
-post_id <- function(id = 'dapeng',
+#' post_id('dapeng')
+post_id <- function(id = NA,
                     method = c('steemdb.com', 'steemsql.com', 'appbase_api', 'steemdata.com'),
-                    sql_id,
-                    sql_password,
+                    steemsql_connection,
                     post_number = NA) {
   method <- match.arg(method)
   # from steemdb.com
@@ -398,9 +390,6 @@ post_id <- function(id = 'dapeng',
   mypost_id <- post_df(postlinks = postlinks)
   } else if(method == 'steemsql.com') {
     # from steemsql.com
-    sql_connection <- paste0("Driver={SQL Server};server=sql.steemsql.com;database=DBSteem;uid=",
-                             sql_id, ";pwd=", sql_password)
-    cn <- RODBC::odbcDriverConnect(connection = sql_connection)
     post_query <- paste0("SELECT *
                          FROM Comments
                          WHERE
@@ -409,7 +398,7 @@ post_id <- function(id = 'dapeng',
                          depth = 0
                          ORDER by
                          created")
-    mypost_id <- RODBC::sqlQuery(channel = cn,
+    mypost_id <- RODBC::sqlQuery(channel = steemsql_connection,
                                  query = post_query,
                                  stringsAsFactors = FALSE)
   } else if(method == 'appbase_api') {
