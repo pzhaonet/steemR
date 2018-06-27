@@ -278,6 +278,55 @@ idlink <- function(id = NA) {
   paste0('<a href="https://steemit.com/@', id, '">@', id, '</a>')
 }
 
+#' Split the characters in a data frame
+#'
+#' @param dataframe A column of a dataframe with characters to split
+#'
+#' @return A character vector
+#' @export
+#'
+#' @examples
+charsplit <- function(dataframe){
+  char_all <- paste(dataframe, collapse = ' ')
+  char_single <- strsplit(char_all, split = ' ')[[1]]
+}
+
+#' Summary of the voters of an ID's posts
+#'
+#' @param mypost A data frame of an ID's posts retrieved with the appbase_api method
+#' @param if_plot A logic value of whether plot the pie diagram.
+#' @param top A numeric value of the Top voters plotted in the pie diagram.
+#'
+#' @return A data frame of the voters
+#' @export
+#'
+#' @examples
+voter_sum <- function(mypost, if_plot = TRUE, top = 10){
+  voter <- data.frame(
+    voter = charsplit(dataframe = mypost$voter),
+    rshares = as.numeric(charsplit(dataframe = mypost$voter.rshares)),
+    percent = as.numeric(charsplit(dataframe = mypost$voter.percent)) / 100,
+    row.names = NULL
+  )
+  voter_sum <- beginr::tapplydf(data = voter,
+                             select = 'rshares',
+                             myfactor = 'voter',
+                             sum)
+  voter_percent <- beginr::tapplydf(data = voter,
+                                select = 'percent',
+                                myfactor = 'voter',
+                                mean)
+  voter_sum <- merge(voter_sum, voter_percent, by = 'voter')
+  voter_sum$percentage <- voter_sum$rshares / sum(voter_sum$rshares)
+  voter_sum <- voter_sum[rev(order(voter_sum$rshares)), ]
+  row.names(voter_sum) <- 1:nrow(voter_sum)
+  if (if_plot) {
+    pie_df <- voter_sum[voter_sum$percentage >= 0, c('voter', 'percentage')]
+    if (nrow(pie_df) > top) pie_df <- pie_df[1:top, ]
+    pie = pie(pie_df$percentage, labels = pie_df$voter)
+  }
+  return(voter_sum)
+}
 
 #' Get the complete info of a single given post on steemdb.com
 #'
