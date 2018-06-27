@@ -1,3 +1,203 @@
+#' Prepare the grid for the plot
+#'
+#' @param my_df A data frame as the input data
+#'
+#' @return Parameters prepared for the grid.
+#'
+#' @examples prepare.grid(NA)
+prepare.grid <- function(mydf) {
+  if (all(is.na(mydf$x)))
+    return()
+  levels(mydf$x) <- paste0("x", 1:length(theLabels))
+  all <- stat.fun(mydf[, wd])
+  calm <- mydf[mydf[, wd] == -999, ][, pollutant]
+  mydf <- mydf[mydf[, wd] != -999, ]
+  calm <- stat.fun(calm)
+  weights <- tapply(mydf[, pollutant],
+                    list(mydf[, wd], mydf$x), stat.fun)
+  if (stat.scale == "all") {
+    calm <- calm/all
+    weights <- weights/all
+  }
+  if (stat.scale == "panel") {
+    temp <- stat.fun(stat.fun(weights)) + calm
+    calm <- calm/temp
+    weights <- weights/temp
+  }
+  weights[is.na(weights)] <- 0
+  weights <- t(apply(weights, 1, cumsum))
+  if (stat.scale == "all" | stat.scale == "panel") {
+    weights <- weights * 100
+    calm <- calm * 100
+  }
+  panel.fun <- stat.fun2(mydf[, pollutant])
+  u <- mean(sin(2 * pi * mydf[, wd]/360))
+  v <- mean(cos(2 * pi * mydf[, wd]/360))
+  mean.wd <- atan2(u, v) * 360/2/pi
+  if (all(is.na(mean.wd))) {
+    mean.wd <- NA
+  }
+  else {
+    if (mean.wd < 0)
+      mean.wd <- mean.wd + 360
+    if (mean.wd > 180)
+      mean.wd <- mean.wd - 360
+  }
+  weights <- cbind(data.frame(weights), wd = as.numeric(row.names(weights)),
+                   calm = calm, panel.fun = panel.fun, mean.wd = mean.wd)
+  weights
+}
+
+#' The panel function for the hour rose plot
+#'
+#' @param x A numeric vetor of x.
+#' @param y A numeric vetor of y.
+#' @param subscripts A character string of the subscripts
+#' @param ... other parameters.
+#'
+#' @return a panel function.
+panel_hourrose <- function(x, y, subscripts, ...) {
+  panel.xyplot(x, y, ...)
+  angles <- seq(0, 2 * pi, length = 360)
+  sapply(seq(off.set, mymax, by = myby),
+         function(x) llines(x * sin(angles),
+                            x * cos(angles),
+                            col = "grey85",
+                            lwd = 1))
+  subdata <- results.grid[subscripts, ]
+  upper <- max.freq + off.set
+  lar <- upper * 0.9
+  for (langle in seq(0, 2 * pi, pi/4)) {
+    larrows(0, 0, lar * cos(langle), lar * (sin(langle)),
+            code = 3, length = 0, col = 'grey')
+  }
+  for (langle in seq(0, 2 * pi, pi/2)) {
+    larrows(0, 0, lar * cos(langle), lar * (sin(langle)),
+            code = 3,length = 0)
+  }
+  if (quantile_line) {
+    for (langle in quantile(my_df[, wd], seq(0.25, 1, 0.25)) / 180 * pi) {
+      larrows(0, 0, lar * sin(langle), lar * (cos(langle)),
+              code = 1, length = 0, col = 'red')
+    }
+  }
+
+
+  # larrows(-upper * 0.9, 0, upper * 0.9, 0, code = 3,
+  #         length = 0)
+  # larrows(0, -upper * 0.9, 0, upper * 0.9, code = 3,
+  #         length = 0)
+
+  ltext(0 * upper, upper * 0.95, cust_labels[1], cex = 1)
+  ltext(upper * 0.95, 0 * upper, cust_labels[2], cex = 1)
+  ltext(0 * upper, upper * -1 * 0.95, cust_labels[3],
+        cex = 1)
+  ltext(upper * -1 * 0.95, 0 * upper, cust_labels[4],
+        cex = 1)
+  if (nrow(subdata) > 0) {
+    for (i in 1:nrow(subdata)) {
+      with(subdata, {
+        for (j in 1:length(theLabels)) {
+          if (j == 1) {
+            temp <- "poly(wd[i], 0, x1[i], width * box.widths[1], col[1])"
+          } else {
+            temp <- paste("poly(wd[i], x", j - 1,
+                          "[i], x", j, "[i], width * box.widths[",
+                          j, "], col[", j, "])", sep = "")
+          }
+          eval(parse(text = temp))
+        }
+      })
+    }
+  }
+  ltext(seq((myby + off.set), mymax, myby) * sin(pi/4),
+        seq((myby + off.set), mymax, myby) * cos(pi/4),
+        paste(seq(myby, mymax, by = myby), stat.unit,
+              sep = ""), cex = 0.7)
+  if (annotate) if (statistic != "prop.mean") {
+    if (!diff) {
+      ltext(max.freq + off.set, -max.freq - off.set,
+            label = paste0(stat.lab2, " = ",
+                           subdata$panel.fun[1],
+                           "\ncalm = ", subdata$calm[1],
+                           stat.unit),
+            adj = c(1, 0), cex = 0.7, col = calm.col)
+    }
+    if (diff) {
+      ltext(max.freq + off.set, -max.freq - off.set,
+            label = paste0("mean ws = ",
+                           round(subdata$panel.fun[1], 1),
+                           "\nmean wd = ",
+                           round(subdata$mean.wd[1], 1)),
+            adj = c(1, 0), cex = 0.7,
+            col = calm.col)
+    }
+  } else {
+    ltext(max.freq + off.set, -max.freq - off.set,
+          label = paste0(stat.lab2, " = ", subdata$panel.fun[1],
+                        stat.unit), adj = c(1, 0), cex = 0.7,
+          col = calm.col)
+  }
+}
+
+#' Poly function when paddle == TRUE
+#'
+#' @param wd A numeric vector of wind directions.
+#' @param len1 A numeric vetor of length 1.
+#' @param len2 A numeric vetor of length 2.
+#' @param width A numeric value of the width.
+#' @param colour Colours used in the paddle.
+#' @param x.off offset of x.
+#' @param y.off offset of y.
+#'
+#' @return A lpolygon function .
+#'
+poly_paddle <- function(wd, len1, len2, width, colour,
+                        x.off = 0,
+                        y.off = 0) {
+  theta <- wd * pi/180
+  len1 <- len1 + off.set
+  len2 <- len2 + off.set
+  x1 <- len1 * sin(theta) - width * cos(theta) + x.off
+  x2 <- len1 * sin(theta) + width * cos(theta) + x.off
+  x3 <- len2 * sin(theta) - width * cos(theta) + x.off
+  x4 <- len2 * sin(theta) + width * cos(theta) + x.off
+  y1 <- len1 * cos(theta) + width * sin(theta) + y.off
+  y2 <- len1 * cos(theta) - width * sin(theta) + y.off
+  y3 <- len2 * cos(theta) + width * sin(theta) + y.off
+  y4 <- len2 * cos(theta) - width * sin(theta) + y.off
+  lpolygon(c(x1, x2, x4, x3), c(y1, y2, y4, y3),
+           col = colour, border = border)
+}
+
+#' Poly function when paddle == FALSE
+#'
+#' @param wd A numeric vector of wind directions.
+#' @param len1 A numeric vetor of length 1.
+#' @param len2 A numeric vetor of length 2.
+#' @param width A numeric value of the width.
+#' @param colour Colours used in the paddle.
+#' @param x.off offset of x.
+#' @param y.off offset of y.
+#'
+#' @return A lpolygon function .
+#'
+poly_paddless <- function(wd, len1, len2, width, colour,
+                          x.off = 0,
+                          y.off = 0) {
+  len1 <- len1 + off.set
+  len2 <- len2 + off.set
+  theta <- seq((wd - seg * angle/2), (wd + seg * angle/2),
+               length.out = (angle - 2) * 10)
+  theta <- ifelse(theta < 1, 360 - theta, theta)
+  theta <- theta * pi/180
+  x1 <- len1 * sin(theta) + x.off
+  x2 <- rev(len2 * sin(theta) + x.off)
+  y1 <- len1 * cos(theta) + x.off
+  y2 <- rev(len2 * cos(theta) + x.off)
+  lpolygon(c(x1, x2), c(y1, y2), col = colour, border = border)
+}
+
 ##' Hour rose plot.
 ##'
 ##' @param my_df A data frame containing fields ws and wd.
@@ -188,49 +388,7 @@ hourrose <- function(my_df, col_time = 'created',
                  dig.lab = dig.lab)
   theLabels <- gsub("[(]|[)]|[[]|[]]", "", levels(my_df$x))
   theLabels <- gsub("[,]", " to ", theLabels)
-  prepare.grid <- function(my_df) {
-    if (all(is.na(my_df$x)))
-      return()
-    levels(my_df$x) <- c(paste("x", 1:length(theLabels),
-                                sep = ""))
-    all <- stat.fun(my_df[, wd])
-    calm <- my_df[my_df[, wd] == -999, ][, pollutant]
-    my_df <- my_df[my_df[, wd] != -999, ]
-    calm <- stat.fun(calm)
-    weights <- tapply(my_df[, pollutant], list(my_df[,
-                                                       wd], my_df$x), stat.fun)
-    if (stat.scale == "all") {
-      calm <- calm/all
-      weights <- weights/all
-    }
-    if (stat.scale == "panel") {
-      temp <- stat.fun(stat.fun(weights)) + calm
-      calm <- calm/temp
-      weights <- weights/temp
-    }
-    weights[is.na(weights)] <- 0
-    weights <- t(apply(weights, 1, cumsum))
-    if (stat.scale == "all" | stat.scale == "panel") {
-      weights <- weights * 100
-      calm <- calm * 100
-    }
-    panel.fun <- stat.fun2(my_df[, pollutant])
-    u <- mean(sin(2 * pi * my_df[, wd]/360))
-    v <- mean(cos(2 * pi * my_df[, wd]/360))
-    mean.wd <- atan2(u, v) * 360/2/pi
-    if (all(is.na(mean.wd))) {
-      mean.wd <- NA
-    }
-    else {
-      if (mean.wd < 0)
-        mean.wd <- mean.wd + 360
-      if (mean.wd > 180)
-        mean.wd <- mean.wd - 360
-    }
-    weights <- cbind(data.frame(weights), wd = as.numeric(row.names(weights)),
-                     calm = calm, panel.fun = panel.fun, mean.wd = mean.wd)
-    weights
-  }
+
   if (paddle) {
     poly <- function(wd, len1, len2, width, colour, x.off = 0,
                      y.off = 0) {
@@ -268,7 +426,8 @@ hourrose <- function(my_df, col_time = 'created',
   my_df <- openair::cutData(my_df, type, ...)
   results.grid <- plyr::ddply(.data = my_df,
                               .variables = type,
-                              .fun = prepare.grid)
+                              .fun = prepare.grid,
+                              mydf = my_df)
   results.grid$calm <- stat.labcalm(results.grid$calm)
   results.grid$mean.wd <- stat.labcalm(results.grid$mean.wd)
   strip.dat <- openair:::strip.fun(results.grid, type, auto.text)

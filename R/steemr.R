@@ -180,10 +180,9 @@ follower_df <- function(id = NA){
 #' @export
 #'
 #' @examples
-#' vote('https://steemit.com/cn/@dapeng/steemit-markdown')
-vote <- function(post = NA){
-  y <- paste0(post, '/votes')
-  y <- gsub('steemit.com', 'steemdb.com', y)
+#' vote('cn/@dapeng/steemit-markdown')
+vote <- function(postlink = NA){
+  y <- paste0('https://steemdb.com/', postlink, '/votes')
   theurl <- RCurl::getURL(y, .opts = list(ssl.verifypeer = FALSE) )
   votes <- XML::readHTMLTable(theurl)[[1]]
   votes$Voter <- as.character(votes$Voter)
@@ -191,6 +190,79 @@ vote <- function(post = NA){
   votes$Weight <- substr(votes$Weight, 1, regexpr(' ', votes$Weight)-1)
   votes$'Reward Shares' <- substr(votes$'Reward Shares', 1, regexpr(' ', votes$'Reward Shares') - 1)
   return(votes[, -1])
+}
+
+#' Find which followers have not voted a post yet
+#'
+#' @param postlink A character string of the link to a target post.
+#'
+#' @return A character vector of the name list of the followers who have not voted the target post yet.
+#' @export
+#'
+#' @examples
+#' who_not_vote('cn/@dapeng/steemit-markdown')
+who_not_vote <- function(postlink = NA){
+  vr_votes <- vote(post = postlink)$Voter
+  postlink <- paste0('https://steemdb.com/', postlink)
+  vr_id <- substr(strsplit(postlink, '/')[[1]][5],
+                  2, nchar(strsplit(postlink, '/')[[1]][5]))
+  vr_follower <- unique(follower(id = vr_id)$followers)
+  vr_follower <- vr_follower[!(vr_follower %in% vr_votes)]
+  return(vr_follower[order(vr_follower)])
+}
+
+#' Get the vote information of given IDs from SteemSQL
+#'
+#' @param voters A character vector of given Steem IDs
+#' @param from A character string of the starting date. in 'Y-m-d' format.
+#' @param to A character string of the ending date. in 'Y-m-d' format.
+#' @param select A character vector of the selected columns in the SteemSQL query.
+#' @param steemsql_connection A connection to the SteemSQL server.
+#' @param if_plot_daily A logic value of whether plot the daily votes.
+#'
+#' @return A list (and a diagram) of the voter report.
+#' @export
+#'
+#' @examples voter(voters = NA)
+voter <- function(voters = NA,
+                  from = Sys.Date() - 7, # in '2017-10-24' format
+                  to = Sys.Date(),
+                  select = '*',
+                  steemsql_connection = NA,
+                  if_plot_daily = FALSE){
+  if (NA %in% voters) return(message('Invalid voters.'))
+  from <- as.Date(from)
+  to <- as.Date(to)
+  select <- paste(select, collapse = ', ')
+  voters <- paste(voters, collapse = "', '")
+  sql_query <- paste0("SELECT ", select,
+                      " FROM TxVotes WHERE voter IN ('", voters,
+                      "') AND timestamp BETWEEN '",
+                      format(from, '%Y/%m/%d'), "' and '",
+                      format(to, '%Y/%m/%d'), "'")
+  voter_df <- RODBC::sqlQuery(channel = steemsql_connection,
+                              query = sql_query,
+                              stringsAsFactors = FALSE)
+  if(if_plot_daily){
+    voter_df$date <- as.Date(voter_df$timestamp)
+    votes <- voter_df[order(voter_df$voter, voter_df$date),]
+    votes_daily <- as.data.frame(table(votes$date, votes$voter))
+    names(votes_daily) <- c('date', 'voter', 'n')
+    votes_daily$date <- as.Date(as.character(votes_daily$date))
+    votes_n <- as.data.frame(table(votes$voter))
+    names(votes_n) <- c('voter', 'n')
+    votes_n$daily <- round(votes_n$n / as.numeric(diff(c(from, to))), 2)
+    votes_n$n_authors <- tapply(votes$author, votes$voter, function(x) length(unique(x)))
+    votes_n$weight <- tapply(votes$weight, votes$voter, mean) / 100
+    voter_plot <- ggplot2::qplot(x = date, y = n,
+                                 col = voter, data = votes_daily,
+                                 geom =  "line",
+                                 xlab = 'Date', ylab = 'Daily Votes')
+    voter_ls <- list(voter = voter_df, voter_summary = votes_n, voter_plot = voter_plot)
+  } else {
+    voter_ls <- list(voter = voter_df)
+  }
+  return(voter_ls)
 }
 
 #' Convert an id from a character to html hyperlink
