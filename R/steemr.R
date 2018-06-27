@@ -291,9 +291,9 @@ charsplit <- function(dataframe){
   char_single <- strsplit(char_all, split = ' ')[[1]]
 }
 
-#' Summary of the voters of an ID's posts
+#' Summary of the voters of a series of posts
 #'
-#' @param mypost A data frame of an ID's posts retrieved with the appbase_api method
+#' @param mypost A data frame of a series of posts retrieved with the appbase_api method
 #' @param if_plot A logic value of whether plot the pie diagram.
 #' @param top A numeric value of the Top voters plotted in the pie diagram.
 #'

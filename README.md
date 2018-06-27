@@ -73,10 +73,44 @@ post_df(c('cn/@dapeng/xuer-sale',
 post_id(id = 'dapeng', method = 'appbase_api')
 ```
 
+#### Plot an active hour rose diagram from the time stamps of an ID's posts
+
+```{r}
+posts <- post_id(id = 'dapeng', method = 'appbase_api')
+hourrose(my_df = posts,
+         col_time = 'datetime')
+```
+
+#### A post's vote report
+
+```{r}
+vote('cn/@dapeng/steemit-markdown')
+```
+
+#### Find which followers have not voted a post yet
+
+```{r}
+who_not_vote('cn/@dapeng/steemit-markdown')
+```
+#### Get the vote information of given IDs from SteemSQL
+
+```{r}
+mysql <- steemsql_connection(sql_id = sql_id, sql_password = sql_password)
+myvoter <- voter(voters = c('dapeng', 'pzhao'), steemsql_connection = mysql, if_plot_daily = T, from = '2018-01-01')
+```
+#### Summary of the voters of a series of posts
+
+```{r}
+posts <- post_id('dapeng', method = 'appbase_api')
+my_voter_sum <- voter_sum(mypost = posts)
+```
+
+
 More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-06-27. v0.0.7. Codes improvement. New functions for vote reports.
 - 2018-06-20. v0.0.6. Support AppBase API connection. `hourrose()` added.
 - 2018-06-19. On [CRAN](https://CRAN.R-project.org/package=steemr).
 - 2018-06-18. v0.0.5. Support SteemSQL and SteemData query. Documentation improved.

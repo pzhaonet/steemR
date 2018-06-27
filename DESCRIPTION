@@ -1,5 +1,5 @@
 Package: steemr
-Version: 0.0.6
+Version: 0.0.7
 Title: A Tool for Processing Steem Data 
 Author: Peng Zhao <pzhao@pzhao.net>
 Maintainer: Peng Zhao <pzhao@pzhao.net>
@@ -15,7 +15,8 @@ Imports:
   lattice,
   RODBC,
   steemr2,
-  VennDiagram
+  VennDiagram,
+  beginr
 Suggests:
 Description: Steem is a blockchain-based social media platform (see <https://en.wikipedia.org/wiki/Steemit>). The Steem social activity data are saved in the Steem blockchain, the SteemDB database, the SteemSQL database, and so on. 'steemr' is an R package that downloads the Steem data from the SteemDB and SteemSQL servers, re-organizes the data in a user-friendly way, and visualizes the data for further analysis.
 License: MIT + file LICENSE

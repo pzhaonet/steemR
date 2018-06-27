@@ -2,12 +2,12 @@
 % Please edit documentation in R/steemr.r
 \name{voter_sum}
 \alias{voter_sum}
-\title{Summary of the voters of an ID's posts}
+\title{Summary of the voters of a series of posts}
 \usage{
 voter_sum(mypost, if_plot = TRUE, top = 10)
 }
 \arguments{
-\item{mypost}{A data frame of an ID's posts retrieved with the appbase_api method}
+\item{mypost}{A data frame of a series of posts retrieved with the appbase_api method}
 
 \item{if_plot}{A logic value of whether plot the pie diagram.}
 
@@ -17,5 +17,5 @@ voter_sum(mypost, if_plot = TRUE, top = 10)
 A data frame of the voters
 }
 \description{
-Summary of the voters of an ID's posts
+Summary of the voters of a series of posts
 }
