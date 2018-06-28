@@ -245,7 +245,7 @@ hourrose <- function(my_df, col_time = 'created',
       y2 <- len1 * cos(theta) - width * sin(theta) + y.off
       y3 <- len2 * cos(theta) + width * sin(theta) + y.off
       y4 <- len2 * cos(theta) - width * sin(theta) + y.off
-      lpolygon(c(x1, x2, x4, x3), c(y1, y2, y4, y3), col = colour,
+      lattice::lpolygon(c(x1, x2, x4, x3), c(y1, y2, y4, y3), col = colour,
                border = border)
     }
   }
@@ -262,7 +262,7 @@ hourrose <- function(my_df, col_time = 'created',
       x2 <- rev(len2 * sin(theta) + x.off)
       y1 <- len1 * cos(theta) + x.off
       y2 <- rev(len2 * cos(theta) + x.off)
-      lpolygon(c(x1, x2), c(y1, y2), col = colour, border = border)
+      lattice::lpolygon(c(x1, x2), c(y1, y2), col = colour, border = border)
     }
   }
   my_df <- openair::cutData(my_df, type, ...)
@@ -279,7 +279,7 @@ hourrose <- function(my_df, col_time = 'created',
     col <- cols[1:length(theLabels)]
   }
   else {
-    col <- openColours(cols, length(theLabels))
+    col <- openair::openColours(cols, length(theLabels))
   }
   max.freq <- max(results.grid[, (length(type) + 1):(length(theLabels) + length(type))], na.rm = TRUE)
   off.set <- max.freq * (offset/100)
@@ -307,18 +307,18 @@ hourrose <- function(my_df, col_time = 'created',
                       as.table = TRUE, aspect = 1, par.strip.text = list(cex = 0.8),
                       scales = list(draw = FALSE), panel = function(x, y,
                                                                     subscripts, ...) {
-                        panel.xyplot(x, y, ...)
+                        lattice::panel.xyplot(x, y, ...)
                         angles <- seq(0, 2 * pi, length = 360)
-                        sapply(seq(off.set, mymax, by = myby), function(x) llines(x *
+                        sapply(seq(off.set, mymax, by = myby), function(x) lattice::llines(x *
                                                                                     sin(angles), x * cos(angles), col = "grey85",
                                                                                   lwd = 1))
                         subdata <- results.grid[subscripts, ]
                         upper <- max.freq + off.set
                         lar <- upper * 0.9
-                        for (langle in seq(0, 2 * pi, pi/4)) larrows(0, 0, lar * cos(langle), lar * (sin(langle)), code = 3,length = 0, col = 'grey')
-                        for (langle in seq(0, 2 * pi, pi/2)) larrows(0, 0, lar * cos(langle), lar * (sin(langle)), code = 3,length = 0)
+                        for (langle in seq(0, 2 * pi, pi/4)) lattice::larrows(0, 0, lar * cos(langle), lar * (sin(langle)), code = 3,length = 0, col = 'grey')
+                        for (langle in seq(0, 2 * pi, pi/2)) lattice::larrows(0, 0, lar * cos(langle), lar * (sin(langle)), code = 3,length = 0)
                         if (quantile_line) {
-                          for (langle in quantile(my_df[, wd], seq(0.25, 1, 0.25)) / 180 * pi) larrows(0, 0, lar * sin(langle), lar * (cos(langle)), code = 1,length = 0, col = 'red')
+                          for (langle in quantile(my_df[, wd], seq(0.25, 1, 0.25)) / 180 * pi) lattice::larrows(0, 0, lar * sin(langle), lar * (cos(langle)), code = 1,length = 0, col = 'red')
                         }
 
 
@@ -327,11 +327,11 @@ hourrose <- function(my_df, col_time = 'created',
                         # larrows(0, -upper * 0.9, 0, upper * 0.9, code = 3,
                         #         length = 0)
 
-                        ltext(0 * upper, upper * 0.95, cust_labels[1], cex = 1)
-                        ltext(upper * 0.95, 0 * upper, cust_labels[2], cex = 1)
-                        ltext(0 * upper, upper * -1 * 0.95, cust_labels[3],
+                        lattice::ltext(0 * upper, upper * 0.95, cust_labels[1], cex = 1)
+                        lattice::ltext(upper * 0.95, 0 * upper, cust_labels[2], cex = 1)
+                        lattice::ltext(0 * upper, upper * -1 * 0.95, cust_labels[3],
                               cex = 1)
-                        ltext(upper * -1 * 0.95, 0 * upper, cust_labels[4],
+                        lattice::ltext(upper * -1 * 0.95, 0 * upper, cust_labels[4],
                               cex = 1)
                         if (nrow(subdata) > 0) {
                           for (i in 1:nrow(subdata)) {
@@ -349,33 +349,33 @@ hourrose <- function(my_df, col_time = 'created',
                             })
                           }
                         }
-                        ltext(seq((myby + off.set), mymax, myby) * sin(pi/4),
+                        lattice::ltext(seq((myby + off.set), mymax, myby) * sin(pi/4),
                               seq((myby + off.set), mymax, myby) * cos(pi/4),
                               paste(seq(myby, mymax, by = myby), stat.unit,
                                     sep = ""), cex = 0.7)
                         if (annotate) if (statistic != "prop.mean") {
                           if (!diff) {
-                            ltext(max.freq + off.set, -max.freq - off.set,
+                            lattice::ltext(max.freq + off.set, -max.freq - off.set,
                                   label = paste(stat.lab2, " = ", subdata$panel.fun[1],
                                                 "\ncalm = ", subdata$calm[1], stat.unit,
                                                 sep = ""), adj = c(1, 0), cex = 0.7, col = calm.col)
                           }
                           if (diff) {
-                            ltext(max.freq + off.set, -max.freq - off.set,
+                            lattice::ltext(max.freq + off.set, -max.freq - off.set,
                                   label = paste("mean ws = ", round(subdata$panel.fun[1],
                                                                     1), "\nmean wd = ", round(subdata$mean.wd[1],
                                                                                               1), sep = ""), adj = c(1, 0), cex = 0.7,
                                   col = calm.col)
                           }
                         } else {
-                          ltext(max.freq + off.set, -max.freq - off.set,
+                          lattice::ltext(max.freq + off.set, -max.freq - off.set,
                                 label = paste(stat.lab2, " = ", subdata$panel.fun[1],
                                               stat.unit, sep = ""), adj = c(1, 0), cex = 0.7,
                                 col = calm.col)
                         }
                       }, legend = legend)
   xyplot.args <- openair:::listUpdate(xyplot.args, extra.args)
-  plt <- do.call(xyplot, xyplot.args)
+  plt <- do.call(lattice::xyplot, xyplot.args)
   if (length(type) == 1)
     plot(plt)
   else plot(useOuterStrips(plt, strip = strip, strip.left = strip.left))
