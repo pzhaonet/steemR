@@ -507,8 +507,8 @@ post_id <- function(id = NA,
   # from steemdb.com
   if (method == 'steemdb.com') {
     postlinks <- post_links(id = id, post_number = post_number, site = 'steemdb.com')
-  postlinks <- gsub('https://steemdb.com/', '', postlinks)
-  mypost_id <- post_df(postlinks = postlinks)
+    postlinks <- gsub('https://steemdb.com/', '', postlinks)
+    mypost_id <- post_df(postlinks = postlinks)
   } else if(method == 'steemsql.com') {
     # from steemsql.com
     post_query <- paste0("SELECT *
