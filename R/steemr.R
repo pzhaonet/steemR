@@ -468,6 +468,7 @@ post_df <- function(postlinks = NA,
   mypost <- post_info(postlink)
   oldcolname <- names(mypost)
   for (i in 2:length(postlinks)) {
+    postlink <- postlinks[i]
     print(paste(i, postlink))
     postlink <- postlinks[i]
     newline <- post_info(postlink, newline = TRUE, oldcolname = oldcolname)
