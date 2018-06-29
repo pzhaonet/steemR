@@ -1,12 +1,13 @@
 ##' Hour rose plot.
+##' `phour()` plotted a 24-hour clock, indicating the active hours on the basis of a time column in a data frame. It is highly cumstomized on the basis of the `openair::windrose()` function`.
 ##'
-##' @param my_df A data frame containing fields ws and wd.
-##' @param ws A character string of the name of the column representing the SBD payout.
+##' @param my_df A data frame containing the fields ws and wd.
+##' @param ws A character string of the name of the column representing the radium of the circular sectors in the diagram. It can be SBD payout, votes, comments, etc..
 ##' @param wd A character sring of the name of the column representing the hour of the day.
-##' @param ws2 The user can supply a second set of the payout value and hour with which the first can be compared.
+##' @param ws2 The user can supply a second set of data with which the first can be compared.
 ##' @param wd2 see ws2.
-##' @param ws.int A numeric vector of the payout interval. Default is 2 SBD.
-##' @param angle The hour spokes. Other potentially useful angle is 3.
+##' @param ws.int A numeric vector of the ws interval. Default is 2.
+##' @param angle The hour spokes. Other potentially useful angle is 3 (hours).
 ##' @param type type determines how the data are split i.e. conditioned, and then plotted.  It can be 'season', 'year', 'weekday'...  The default is will produce a single plot using the entire data. It can also be a numeric or factor vector.
 ##' @param cols Colours for plotting.  'default', 'increment', 'heat', 'jet', 'hue' and user defined, such as c("yellow", "green", "blue", "black").
 ##' @param grid.line Grid line interval. NULL in default.It can also be a numeric value like 10, or a list like list(value = 10, lty = 5, col = "purple").
@@ -37,19 +38,19 @@
 #' @return A figure with the active hour rose
 #' @export
 #' @examples
-#' hourrose(my_df, breaks = seq(0, 24, 1), angle = 15, key.footer = 'votes')
-hourrose <- function(my_df, col_time = 'created',
-                     ws = "ws", wd = "hour360",
-                     ws2 = NA, wd2 = NA,
-                     ws.int = 30, angle = 1, type = "default", cols = "default",
-                     grid.line = NULL, width = 1, seg = 0.9, auto.text = TRUE,
-                     breaks = 4, offset = 10, paddle = FALSE,
-                     key.header = NULL, key.footer = "(SBD)",
-                     key.position = "right", key = FALSE,
-                     dig.lab = 5, statistic = "prop.count", pollutant = NULL,
-                     cust_labels = c(0, 6, 12, 18), annotate = FALSE,
-                     border = NA, quantile_line = TRUE,
-                     ...)
+#' phour(my_df, breaks = seq(0, 24, 1), angle = 15, key.footer = 'votes')
+phour <- function(my_df, col_time = 'created',
+                  ws = "ws", wd = "hour360",
+                  ws2 = NA, wd2 = NA,
+                  ws.int = 30, angle = 1, type = "default", cols = "default",
+                  grid.line = NULL, width = 1, seg = 0.9, auto.text = TRUE,
+                  breaks = 4, offset = 10, paddle = FALSE,
+                  key.header = NULL, key.footer = "(SBD)",
+                  key.position = "right", key = FALSE,
+                  dig.lab = 5, statistic = "prop.count", pollutant = NULL,
+                  cust_labels = c(0, 6, 12, 18), annotate = FALSE,
+                  border = NA, quantile_line = TRUE,
+                  ...)
 {
   angle <- 15 * angle
   my_df$hour <- round(as.numeric(format(my_df[, col_time], '%H')) + as.numeric(format(my_df[, col_time], '%M'))/60, 1)
@@ -192,13 +193,13 @@ hourrose <- function(my_df, col_time = 'created',
     if (all(is.na(my_df$x)))
       return()
     levels(my_df$x) <- c(paste("x", 1:length(theLabels),
-                                sep = ""))
+                               sep = ""))
     all <- stat.fun(my_df[, wd])
     calm <- my_df[my_df[, wd] == -999, ][, pollutant]
     my_df <- my_df[my_df[, wd] != -999, ]
     calm <- stat.fun(calm)
     weights <- tapply(my_df[, pollutant], list(my_df[,
-                                                       wd], my_df$x), stat.fun)
+                                                     wd], my_df$x), stat.fun)
     if (stat.scale == "all") {
       calm <- calm/all
       weights <- weights/all
@@ -246,7 +247,7 @@ hourrose <- function(my_df, col_time = 'created',
       y3 <- len2 * cos(theta) + width * sin(theta) + y.off
       y4 <- len2 * cos(theta) - width * sin(theta) + y.off
       lattice::lpolygon(c(x1, x2, x4, x3), c(y1, y2, y4, y3), col = colour,
-               border = border)
+                        border = border)
     }
   }
   else {
@@ -310,8 +311,8 @@ hourrose <- function(my_df, col_time = 'created',
                         lattice::panel.xyplot(x, y, ...)
                         angles <- seq(0, 2 * pi, length = 360)
                         sapply(seq(off.set, mymax, by = myby), function(x) lattice::llines(x *
-                                                                                    sin(angles), x * cos(angles), col = "grey85",
-                                                                                  lwd = 1))
+                                                                                             sin(angles), x * cos(angles), col = "grey85",
+                                                                                           lwd = 1))
                         subdata <- results.grid[subscripts, ]
                         upper <- max.freq + off.set
                         lar <- upper * 0.9
@@ -330,9 +331,9 @@ hourrose <- function(my_df, col_time = 'created',
                         lattice::ltext(0 * upper, upper * 0.95, cust_labels[1], cex = 1)
                         lattice::ltext(upper * 0.95, 0 * upper, cust_labels[2], cex = 1)
                         lattice::ltext(0 * upper, upper * -1 * 0.95, cust_labels[3],
-                              cex = 1)
+                                       cex = 1)
                         lattice::ltext(upper * -1 * 0.95, 0 * upper, cust_labels[4],
-                              cex = 1)
+                                       cex = 1)
                         if (nrow(subdata) > 0) {
                           for (i in 1:nrow(subdata)) {
                             with(subdata, {
@@ -350,28 +351,28 @@ hourrose <- function(my_df, col_time = 'created',
                           }
                         }
                         lattice::ltext(seq((myby + off.set), mymax, myby) * sin(pi/4),
-                              seq((myby + off.set), mymax, myby) * cos(pi/4),
-                              paste(seq(myby, mymax, by = myby), stat.unit,
-                                    sep = ""), cex = 0.7)
+                                       seq((myby + off.set), mymax, myby) * cos(pi/4),
+                                       paste(seq(myby, mymax, by = myby), stat.unit,
+                                             sep = ""), cex = 0.7)
                         if (annotate) if (statistic != "prop.mean") {
                           if (!diff) {
                             lattice::ltext(max.freq + off.set, -max.freq - off.set,
-                                  label = paste(stat.lab2, " = ", subdata$panel.fun[1],
-                                                "\ncalm = ", subdata$calm[1], stat.unit,
-                                                sep = ""), adj = c(1, 0), cex = 0.7, col = calm.col)
+                                           label = paste(stat.lab2, " = ", subdata$panel.fun[1],
+                                                         "\ncalm = ", subdata$calm[1], stat.unit,
+                                                         sep = ""), adj = c(1, 0), cex = 0.7, col = calm.col)
                           }
                           if (diff) {
                             lattice::ltext(max.freq + off.set, -max.freq - off.set,
-                                  label = paste("mean ws = ", round(subdata$panel.fun[1],
-                                                                    1), "\nmean wd = ", round(subdata$mean.wd[1],
-                                                                                              1), sep = ""), adj = c(1, 0), cex = 0.7,
-                                  col = calm.col)
+                                           label = paste("mean ws = ", round(subdata$panel.fun[1],
+                                                                             1), "\nmean wd = ", round(subdata$mean.wd[1],
+                                                                                                       1), sep = ""), adj = c(1, 0), cex = 0.7,
+                                           col = calm.col)
                           }
                         } else {
                           lattice::ltext(max.freq + off.set, -max.freq - off.set,
-                                label = paste(stat.lab2, " = ", subdata$panel.fun[1],
-                                              stat.unit, sep = ""), adj = c(1, 0), cex = 0.7,
-                                col = calm.col)
+                                         label = paste(stat.lab2, " = ", subdata$panel.fun[1],
+                                                       stat.unit, sep = ""), adj = c(1, 0), cex = 0.7,
+                                         col = calm.col)
                         }
                       }, legend = legend)
   xyplot.args <- openair:::listUpdate(xyplot.args, extra.args)
@@ -384,4 +385,3 @@ hourrose <- function(my_df, col_time = 'created',
   class(output) <- "openair"
   invisible(output)
 }
-
