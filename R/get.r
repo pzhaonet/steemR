@@ -513,3 +513,103 @@ gidposts <- function(id = NA,
   }
   return(mypost_id)
 }
+
+#' Rename the getBlog() function from the steemr2 package
+#'
+#' @param id A Steem ID
+#'
+#' @return A dataframe with the ID's posts
+#' @export
+#'
+#' @examples gblog('dapeng')
+gblog <- function(id){
+  steemr2::getBlog(id)
+}
+
+#' Get the Steem account information within a period from SteemSQL
+#' gaccounts means 'get account information'.
+#'
+#' @param from A Date object or character in '2017-10-24' format of the beginning of the period
+#' @param to A Date object or character in '2017-10-24' format of the end of the period
+#' @param select A character string vector of the column names
+#' @param if_plot A logic value of whether plot the time series
+#' @param sql_con A SQL connection
+#'
+#' @return A data frame of the account information with a figure
+#' @export
+#'
+#' @examples gaccounts()
+gaccounts <- function(from = Sys.Date() - 7,
+                      to = Sys.Date(),
+                      select = c('name', 'created', 'post_count', 'last_post'),
+                      sql_con,
+                      ylab = 'Daily New Accounts',
+                      if_plot = FALSE){
+  from <- as.Date(from)
+  to <- as.Date(to)
+  select <- paste(select, collapse = ', ')
+  sql_query <- paste0("SELECT ", select,
+                      " FROM Accounts
+                      WHERE created BETWEEN '",
+                      format(from, '%Y/%m/%d'), "' and '",
+                      format(to, '%Y/%m/%d'), "'")
+  accounts_df <- RODBC::sqlQuery(channel = sql_con,
+                                 query = sql_query,
+                                 stringsAsFactors = FALSE)
+  accounts_df$date <- as.Date(accounts_df$created)
+  accounts_daily <- adailyf(mydata = accounts_df,
+                            datecol = 'date',
+                            ylab = ylab,
+                            if_plot = if_plot)
+  accounts_ls <- list(accounts = accounts_df, daily = accounts_daily)
+  return(accounts_ls)
+}
+
+
+
+#' Get the comment records of an Steem ID within a period from SteemSQL
+#' gcomments means 'get comment information'.
+#'
+#' @param id A character string of a Steem ID
+#' @param from A Date object or character in '2017-10-24' format of the beginning of the period
+#' @param to A Date object or character in '2017-10-24' format of the end of the period
+#' @param select A character string vector of the column names
+#' @param sql_con A SQL connection
+#' @param if_plot A logic value of whether plot the time series
+#'
+#' @return A data frame of the comment information with a figure
+#' @export
+#'
+#' @examples gcomments()
+gcomments <- function(id = NA,
+                      from = Sys.Date() - 7,
+                      to = Sys.Date(),
+                      select = c('root_title', 'root_comment', 'created', 'body'),
+                      sql_con,
+                      ylab = 'Daily Comments',
+                      if_plot = FALSE){
+  if(is.na(id)) {
+    return(message('Please give a valid id.'))
+  }
+
+  from <- as.Date(from)
+  to <- as.Date(to)
+  select <- paste(select, collapse = ', ')
+  sql_query <- paste0("SELECT ", select,
+                      " FROM Comments
+                      WHERE author = '", id, "' AND depth > 0 AND
+                      created BETWEEN '",
+                      format(from, '%Y/%m/%d'),
+                      "' and '", format(to, '%Y/%m/%d'), "'")
+  cmt <- sqlQuery(channel = sql_con,
+                  query = sql_query,
+                  stringsAsFactors = FALSE)
+  cmt$date <- as.Date(cmt$created)
+  cmt_daily <- adailyf(mydata = cmt,
+                       datecol = 'date',
+                       if_plot = if_plot,
+                       ylab = ylab)
+  cmt_ls <- list(comment = cmt, daily = cmt_daily)
+  return(cmt_ls)
+}
+

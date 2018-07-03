@@ -76,3 +76,32 @@ avotep <- function(mypost = NA,
 
   return(voter_sum)
 }
+
+
+#' Calculate the the daily frequency.
+#' adailyf means 'analysis of the daily frequency'.
+#'
+#' @param mydata A data frame with a date column.
+#' @param datecol A chracter string of the date column name. The date column could either be Date or Character (in '\%Y-\%m-\%d' format).
+#' @param col A color for plotting
+#' @param ylab A character string of the y label
+#' @param if_plot A logic value of whether plot the time series
+#'
+#' @return A dataframe of the daily frequency
+#' @export
+adailyf <- function(mydata,
+                    datecol,
+                    if_plot = FALSE,
+                    col = 'steelblue3',
+                    ylab = 'Daily posts') {
+  daily <- data.frame(table(mydata[, datecol]))
+  names(daily)[1] <- 'date'
+  daily$date <- as.Date(daily$date)
+  if(if_plot) {
+    pdate(x = daily$date, y = daily$Freq, myxlim = range(daily$date),
+         myylim = c(0, max(daily$Freq, na.rm = TRUE) + 1),
+         myylab = ylab,
+         mycol = col)
+  }
+  return(daily)
+}

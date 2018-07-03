@@ -33,83 +33,100 @@ devtools::install_github('pzhaonet/steemr2')
 #### obtain the complete account information
 
 ```
-id_info(id = 'dapeng')
+gid(id = 'dapeng', method = 'steemdb.com')
+gid(id = 'dapeng', method = 'appbase_api')
 ```
 
 #### Get a name list of an ID's followers and following
 
 ```{r}
-follower(id = 'dapeng')
+gfollow('dapeng')
 ```
 
 #### Get an id's following history
 
 ```
-following(id = 'dapeng')
+gfollowing(id = 'dapeng')
 ```
 
 #### Get an ID's complete post list with hyperlinks
 
 ```{r}
-post_links(id = 'dapeng', post_number = 3)
+gidposts(id = 'dapeng', method = 'steemdb.com', post_number = 3)
+gidposts(id = 'dapeng', method = 'appbase_api')
+
 ```
 
 #### Get the complete info of a single given post on steemdb.com
 
 ```{r}
-post_info(postlink = 'utopian-io/@dapeng/steemg-four-more')
+mylinks <- c("cn/@dapeng/xuer-sale", "utopian-io/@dapeng/steemg-four-more")
+tgpost <- gpost(postlink = mylinks[1], method = 'steemdb.com')
 ```
 
 #### Get the detailed information of given posts from steemdb.com
 
 ```{r}
-post_df(c('cn/@dapeng/xuer-sale',
-          'utopian-io/@dapeng/steemg-four-more'))
+gposts(postlinks = mylinks, method = 'steemdb.com')
 ```
 
 #### Get an ID's posts with complete information
 
 ```{r}
-post_id(id = 'dapeng', method = 'appbase_api')
+gidposts(id = 'dapeng', method = 'appbase_api')
+gblog(id = 'dapeng')
+
 ```
 
 #### Plot an active hour rose diagram from the time stamps of an ID's posts
 
 ```{r}
 posts <- post_id(id = 'dapeng', method = 'appbase_api')
-hourrose(my_df = posts,
-         col_time = 'datetime')
+phour(my_df = posts, col_time = 'datetime')
 ```
 
 #### A post's vote report
 
 ```{r}
-vote('cn/@dapeng/steemit-markdown')
+gvotep(mylinks[1])
 ```
 
 #### Find which followers have not voted a post yet
 
 ```{r}
-who_not_vote('cn/@dapeng/steemit-markdown')
+avotenot(mylinks[2])
 ```
 #### Get the vote information of given IDs from SteemSQL
 
 ```{r}
-mysql <- steemsql_connection(sql_id = sql_id, sql_password = sql_password)
-myvoter <- voter(voters = c('dapeng', 'pzhao'), steemsql_connection = mysql, if_plot_daily = T, from = '2018-01-01')
+mysql <- ssql(uid = your_steemsql_id, pwd = your_steemsql_password)
+gvoter(voters = c('dapeng', 'pzhao'),
+       from = '2018-03-01', to = '2018-05-31',
+       if_plot = TRUE, sql_con = mysql)
 ```
 #### Summary of the voters of a series of posts
 
 ```{r}
-posts <- post_id('dapeng', method = 'appbase_api')
-my_voter_sum <- voter_sum(mypost = posts)
+tavotep <- avotep(posts)
 ```
 
+#### Get the accounts list and analysis within a period
+
+```{r}
+gaccounts(sql_con = mysql, if_plot= T)
+```
+
+#### Get the comment list and analysis within a period
+
+```{r}
+gcomments(id = 'dapeng', sql_con = mysql, if_plot= T)
+```
 
 More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-07-03. v0.0.8. Functions renamed. Codes re-organized. New functions for account info and comments info.
 - 2018-06-27. v0.0.7. Codes improvement. New functions for vote reports.
 - 2018-06-20. v0.0.6. Support AppBase API connection. `hourrose()` added.
 - 2018-06-19. On [CRAN](https://CRAN.R-project.org/package=steemr).

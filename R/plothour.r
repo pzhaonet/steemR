@@ -52,6 +52,7 @@ phour <- function(my_df, col_time = 'created',
                   border = NA, quantile_line = TRUE,
                   ...)
 {
+  my_df <- as.data.frame(my_df)
   angle <- 15 * angle
   my_df$hour <- round(as.numeric(format(my_df[, col_time], '%H')) + as.numeric(format(my_df[, col_time], '%M'))/60, 1)
   my_df$hour360 <- my_df$hour * 360 / 24
