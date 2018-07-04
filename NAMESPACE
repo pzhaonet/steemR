@@ -3,6 +3,8 @@
 export(adailyf)
 export(avotenot)
 export(avotep)
+export(bblog)
+export(bmd)
 export(gaccounts)
 export(gblog)
 export(gcomments)

@@ -52,3 +52,16 @@ charsplit <- function(dataframe = NA){
   char_all <- paste(dataframe, collapse = ' ')
   char_single <- strsplit(char_all, split = ' ')[[1]]
 }
+
+
+#' Clear the characters in the titles
+#'
+#' @param title The post title
+#'
+#' @return A clear title
+clear_title <- function(title){
+  title_new <- gsub('"', '\\\\"', title)
+  title_new <- gsub('\\|', '-', title_new)
+  title_new <- gsub('\\?\\?', '', title_new)
+  return(title_new)
+}
