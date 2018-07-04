@@ -122,10 +122,21 @@ gaccounts(sql_con = mysql, if_plot= T)
 gcomments(id = 'dapeng', sql_con = mysql, if_plot= T)
 ```
 
+#### Save an ID's posts as markdown files in the local path
+
+```{r}
+bmd(post_df = posts)
+```
+#### Build a Hugo blog site from an ID's posts
+
+```{r}
+bblog(author = 'dapeng', post_df = posts, initial = TRUE)
+```
 More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-07-04. New functions: `bmd()`, `bblog()`.
 - 2018-07-03. v0.0.8. Functions renamed. Codes re-organized. New functions for account info and comments info.
 - 2018-06-27. v0.0.7. Codes improvement. New functions for vote reports.
 - 2018-06-20. v0.0.6. Support AppBase API connection. `hourrose()` added.
