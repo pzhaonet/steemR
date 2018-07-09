@@ -33,9 +33,9 @@ ssql <- function(uid = NA,
 #' @examples
 #' gid(id = 'dapeng')
 gid <- function(id = NA,
-                method = c('steemdb.com',
+                method = c('appbase_api',
+                           'steemdb.com',
                            'steemsql.com',
-                           'appbase_api',
                            'steemdata.com'),
                 sql_con){
   if(is.na(id)) {
@@ -60,6 +60,7 @@ gid <- function(id = NA,
     return(info_df)
   } else if(method == 'appbase_api') {
     info_df <- steemr2::getAccount(username = id)
+    info_df <- cbind(id = id, info_df)
     return(info_df)
   } else if(method == 'steemdata.com') {
     myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
@@ -613,3 +614,102 @@ gcomments <- function(id = NA,
   return(cmt_ls)
 }
 
+
+#' Get the delegation information of a Steem ID from SteemSQL
+#' gdelegation means 'get delegation information'.
+#'
+#' @param id A character string of a Steem ID
+#' @param sql_con A SQL connection
+#' @param if_plot A logic value of whether plot the time series
+#'
+#' @return A data frame of the delegation information with a figure
+#' @export
+#'
+#' @examples gdelegation()
+gdelegation <- function(id,
+                        sql_con,
+                        if_plot = FALSE){
+  # query the data from the server
+  sql_query <- paste0("SELECT *
+                      FROM TxDelegateVestingShares
+                      WHERE delegator = '", id,
+                      "' OR delegatee = '", id, "'")
+  dele_df <- RODBC::sqlQuery(channel = sql_con,
+                             query = sql_query,
+                             stringsAsFactors = FALSE)
+
+  # plot the data
+  if(if_plot) {
+    dele2 <- ifelse(dele_df$delegator == id,
+                    - dele_df$vesting_shares,
+                    dele_df$vesting_shares)
+    who <- as.factor(ifelse(dele_df$delegator == id,
+                            dele_df$delegatee,
+                            dele_df$delegator))
+    mycol <- rainbow(nlevels(who))[who]
+    plot(dele_df$timestamp,
+         dele2,
+         type = 'h',
+         col = mycol,
+         xlab = 'Date',
+         ylab = 'Delegation')
+    text(dele_df$timestamp,
+         dele2,
+         labels = who,
+         col = mycol)
+    abline(h = 0)
+  }
+  return(dele_df)
+}
+
+
+#' Get the value of Steem per Mvest
+#'
+#' @return A numeric value of the Steem per MVest
+#' @export
+#'
+#' @examples gspmv()
+gspmv <- function(){
+  steemdb <- readLines('https://steemdb.com')
+  spm <- steemdb[grep(pattern = 'steem_per_mvests', steemdb) + 1]
+  spm <- gsub(' ', '', spm)
+  spm <- as.numeric(substr(spm, 1, gregexpr('<', spm)[[1]][1] - 1))
+  return(spm)
+}
+
+
+#' Get the CNer name list
+#'
+#' @param date A Date or character string in '\%Y-%m-%d' format
+#'
+#' @return a data frame of the CNer
+#' @export
+#'
+#' @examples gcner()
+gcner <- function(date = Sys.Date()){
+  # download data
+  url <- paste0('https://uploadbeta.com/api/steemit/wechat/?cached&date=', date)
+  raw.result <- httr::GET(url = url)
+  repo_content <- httr::content(raw.result)
+  # format the data
+  mycol <- c('name', 'rep', 'sp', 'esp', 'online','steem','sbd','vp','value')
+
+  if (length(repo_content) > 2) {
+    mymat <- NULL
+    for (i in 1:length(repo_content))
+    {
+      repo <- repo_content[[i]][!names(repo_content[[i]]) %in% c('last_vote_time', 'curation')]
+      repo <- as.data.frame(repo, stringsAsFactors = FALSE)
+      repo[, mycol[!mycol %in%  names(repo)]] <- NA
+      mymat <- rbind(mymat, repo[, mycol])
+    }
+  }
+  mymat$id <- idlink(mymat$name)
+  if(!'esp' %in% names(mymat)) mymat$esp <- NA
+  mymat$N <- rank(-mymat$esp)
+  mymat <- mymat[order(mymat$N), ]
+
+  mymat$level <- unlist(sapply(mymat$esp, whale))
+  mymat$intro <- "NA"
+  mymat[, c('N', 'id', mycol[2:length(mycol)], 'level', 'intro','name')] #'level',
+}

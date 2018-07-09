@@ -136,6 +136,7 @@ More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-07-09. New functions: `gspmv()`, `gdelegation()`, `gcner()`, `acnsub()`.
 - 2018-07-04. New functions: `bmd()`, `bblog()`.
 - 2018-07-03. v0.0.8. Functions renamed. Codes re-organized. New functions for account info and comments info.
 - 2018-06-27. v0.0.7. Codes improvement. New functions for vote reports.

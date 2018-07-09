@@ -65,3 +65,20 @@ clear_title <- function(title){
   title_new <- gsub('\\?\\?', '', title_new)
   return(title_new)
 }
+
+
+
+#' Calculate the level of and ID
+#'
+#' @param x the Raw SP value of an ID
+#'
+#' @return the lavel of the ID
+whale <- function(x){
+  if (is.na(x)) return(NA)
+  y <- c(0, 1e6, 1e7, 1e8, 1e9)  * 485.656 / 1000000
+  if (x > y[5]) return(5)
+  if (x > y[4]) return(4)
+  if (x > y[3]) return(3)
+  if (x > y[2]) return(2)
+  if (x >= y[1]) return(1)
+}

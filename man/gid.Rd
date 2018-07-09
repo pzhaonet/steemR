@@ -4,7 +4,7 @@
 \alias{gid}
 \title{Get an ID's detailed info. gid means 'get an ID's information'.}
 \usage{
-gid(id = NA, method = c("steemdb.com", "steemsql.com", "appbase_api", "steemdata.com"), 
+gid(id = NA, method = c("appbase_api", "steemdb.com", "steemsql.com", "steemdata.com"), 
     sql_con)
 }
 \arguments{

@@ -105,3 +105,62 @@ adailyf <- function(mydata,
   }
   return(daily)
 }
+
+#' Analysis of the CN sub categories.
+#'
+#' @param from A Date object or character in '2017-10-24' format of the beginning of the period
+#' @param to A Date object or character in '2017-10-24' format of the end of the period
+#' @param if_plot A logic value of whether plot the time series
+#' @param sql_con A SQL connection
+#' @param top A numeric value of the Top tags for plotting
+#'
+#' @return A figure showing the active cn sub tag
+#' @export
+#'
+#'
+acnsub <- function(from = Sys.Date() - 7,
+                   to = Sys.Date(),
+                   sql_con,
+                   if_plot = FALSE,
+                   top = 10){
+  # query the data from the server
+  print('Querying. Please wait...')
+  sql_query <- paste0("SELECT created, json_metadata
+                      FROM Comments
+                      WHERE CONTAINS(json_metadata, 'cn-')
+                      AND depth = 0
+                      AND created BETWEEN '",
+                      format(from, '%Y/%m/%d'),
+                      "' and '",
+                      format(to, '%Y/%m/%d'),
+                      "' ORDER by created")
+  posts <- RODBC::sqlQuery(channel = sql_con,
+                           query = sql_query,
+                           stringsAsFactors = FALSE)
+
+  # extract the tags from the json metadata
+  tags <- sapply(X = posts$json_metadata,
+                 FUN = tag_of_post,
+                 simplify = TRUE)
+  tags <- unlist(unname(tags))
+  tags <- tags[grep('cn-', tags)]
+  tags2 <- table(tags)
+  tags2 <- as.data.frame(tags2)
+  tags3 <- tags2[order(-tags2$Freq), ]
+
+  # plot the bar diagram
+  if (if_plot) {
+    oldpar <- par(mar = c(4, 10,1,1))
+    barplot(tags3$Freq[top:1],
+            horiz = TRUE,
+            border = NA,
+            space = 0,
+            names.arg = tags3$tags[top:1],
+            las = 1,
+            col = rainbow(top),
+            xlab = 'Posts')
+    box()
+    par(oldpar)
+  }
+  return(tags3)
+}
