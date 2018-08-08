@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny.r
 \name{sfollow_ui}
 \alias{sfollow_ui}
-\title{UI for the Shiny app sfollow display and analysis}
+\title{UI for the Shiny app \code{sfollow()}}
 \usage{
 sfollow_ui()
 }
@@ -10,5 +10,5 @@ sfollow_ui()
 A UI function
 }
 \description{
-UI for the Shiny app sfollow display and analysis
+UI for the Shiny app \code{sfollow()}
 }

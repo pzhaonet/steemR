@@ -136,6 +136,7 @@ More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-08-08. Wordclouds and Venn diagrams added to `sfollow()`.
 - 2018-07-10. New functions: `sfollow()`.
 - 2018-07-09. New functions: `gspmv()`, `gdelegation()`, `gcner()`, `acnsub()`.
 - 2018-07-04. New functions: `bmd()`, `bblog()`.
