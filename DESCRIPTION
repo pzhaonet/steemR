@@ -14,7 +14,7 @@ Imports:
   openair,
   lattice,
   RODBC,
-  steemr2,
+  steemRdata,
   VennDiagram,
   beginr
 Suggests:
@@ -23,6 +23,6 @@ License: MIT + file LICENSE
 URL: https://github.com/pzhaonet/steemr
 BugReports: https://github.com/pzhaonet/steemr/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 NeedsCompilation: no
 LazyData: true

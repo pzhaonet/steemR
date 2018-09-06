@@ -41,7 +41,7 @@ sfollow_ui <- function(){
           wellPanel(
             plotOutput('fr_venplot')
           ),
-	  
+
       hr(),
       strong("Following but not followers"),
       uiOutput('fr_follower'),
@@ -166,7 +166,7 @@ sfollow_server <- function(input, output, session) {
                                     print.mode = c("percent","raw")
     )
   })
-  
+
     ### create the wordclouds for the followers
   output$fr_plot <- renderPlot({
     if (nrow(fer()) == 0) {
@@ -230,7 +230,7 @@ sfollow_server <- function(input, output, session) {
            cex = 2)
     }
   })
-  
+
   ### Create the table of the followers
   output$fr_dtfer = renderDataTable({
     if (nrow(fer()) == 0) {
@@ -264,4 +264,165 @@ sfollow_server <- function(input, output, session) {
 #' @example sfollow()
 sfollow <- function(){
   return(shiny::shinyApp(ui = sfollow_ui, server = sfollow_server))
+}
+
+
+
+#' UI for the Shiny app scner display and analysis
+#'
+#' @return A UI function
+scner_ui <- function(){
+  fluidPage(
+    sidebarLayout(
+      sidebarPanel(
+        ### Brief instruction
+        h2("Steem CNers"),
+        h4("Features: "),
+        "To display the statistics of the Steem CN Community."
+      ),
+
+      mainPanel(
+        ### query an ID
+        wellPanel(
+          tags$script(' $(document).on("keydown", function (e) {
+                      Shiny.onInputChange("lastkeypresscode", e.keyCode);
+});
+                      '),
+          textInput('wh_id', label = '', value = 'dapeng'),
+          # actionButton('wh_go', 'Go!'),
+          # verbatimTextOutput("wh_summary")
+          tableOutput("wh_summary")
+        ),
+
+        ### Data frame for the CN member list.
+        wellPanel(
+          h4("Name list:"),
+          hr(),
+          checkboxGroupInput(
+            inputId = "colsel",
+            label   = "Choose the columns to display:",
+            choices = c('Intro', 'Reputation', 'Steem Power','ESP', 'Online', 'steem','sbd','VP','Account Value', 'Level', 'Character'), #'level',
+            selected = c('Intro', 'Reputation', 'Steem Power','ESP', 'VP', 'Level', 'Character'),
+            inline = TRUE
+          ),
+          hr(),
+          radioButtons(
+            inputId = "N",
+            label   = "Rank in:",
+            choices = c('Reputation', 'Steem Power','ESP', 'Online', 'Account Value'),
+            selected = 'ESP',
+            inline = TRUE
+          ),
+          hr(),
+
+          dataTableOutput('wh_dt')
+        )
+        ),
+      position = "right"
+    )
+  )
+}
+
+
+scner_server <- function(input, output, session) {
+  ### prepare the data
+  whwechat <- gcner()
+  hero108 <- readLines(system.file(paste0('dict/108.csv'),
+                                   package = 'steemr'),
+                       encoding = 'UTF-8')
+  zhLines <- readLines(system.file(paste0('dict/zh.csv'),
+                                   package = 'steemr'),
+                       encoding = 'UTF-8')
+  zh <- data.frame(matrix(unlist(strsplit(zhLines, ',')),
+                          ncol = 2,
+                          byrow = TRUE),
+                   stringsAsFactors = FALSE)
+  names(zh) <- c('en', 'zh')
+
+  slmax <- nrow(whwechat)
+
+  observe({
+    ### Get the ID to query
+    if(!is.null(input$lastkeypresscode)) {
+      if(input$lastkeypresscode == 13){
+        if (is.null(input$wh_id) || input$wh_id == "") return()
+
+        mywhid <- input$wh_id
+
+        ### query the ID information
+        if (mywhid %in% whwechat$name){
+          nr <- slmax
+          pc <- c('rep', 'sp', 'esp', 'online', 'value')
+          pczh <- zh$zh[match(c('Reputation', 'Steem Power', 'ESP', 'Online', 'Account Value'), zh$en)]
+          mywhidinfor <- data.frame(Ref = pczh)
+          mywhidinfor$value <- unlist(whwechat[whwechat$name == mywhid, pc])
+          mywhidinfor[2:5, 'value'] <- as.character(round(mywhidinfor[2:5, 'value'], 0))
+          # mywhidinfor$rank <- sapply(pc, function(x) which(mywhid == whwechat$name[rev(order(whwechat[, x]))]))
+          mywhidinfor$rank <- sapply(pc,
+                                     function(x) {
+                                       floor(rank(-whwechat[, x], ties.method = 'random')[mywhid == whwechat$name])
+                                     }
+          )
+          mywhidinfor$hero <- hero108[mywhidinfor$rank]
+          nb1 <- mywhidinfor$rank - 1
+          nb1 <- ifelse(nb1 < 1, NA, nb1)
+          nb2 <- mywhidinfor$rank + 1
+          nb2 <- ifelse(nb2 > nr, NA, nb2)
+          nb <- NULL
+          for (i in 1:length(pc)) {
+            newid <- whwechat$name[rev(order(whwechat[, pc[i]]))]
+            nb11 <- ifelse(is.na(nb1[i]),
+                           '',
+                           paste0('@', newid[nb1[i]]))
+            nb22 <- ifelse(is.na(nb2[i]),
+                           '',
+                           paste0('@', newid[nb2[i]]))
+            nb <- c(nb, paste(nb11, nb22))
+          }
+          mywhidinfor$neighbors <- nb
+          mywhidinfor$rank <- gsub('.00', '', mywhidinfor$rank)
+          names(mywhidinfor) <- zh$zh[match(c('Parameter', 'Value', 'Rank' ,'Character', 'Neighbor'), zh$en)]
+        } else {
+          mywhidinfor <- paste0('@', mywhid, zh$zh[match(c('not there.'), zh$en)])
+        }
+
+        ### create the report of the ID information
+        output$wh_summary = renderTable({
+          mywhidinfor
+        })
+      }
+    }
+  })
+
+  ### create the data frame of the CNers.
+  output$wh_dt = renderDataTable({
+    # mycol <- c("N", "id", 'rep', 'sp', 'esp', 'online','steem','sbd','vp','value','name')
+    mymat <- whwechat
+    mymat <- mymat[, -ncol(mymat)]
+    mymat[, c("sp", "esp", "steem", "sbd", "value", "online", 'vp')] <- round(mymat[, c("sp", "esp", "steem", "sbd", "value", "online",'vp')], 0)
+    mymat$hero <- hero108[1:slmax]
+    whalelevel <- readLines(system.file(paste0('dict/zh_level.txt'),
+                                        package = 'steemr'),
+                            encoding = 'UTF-8')
+    mymat$level <- whalelevel[mymat$level]
+
+    names(mymat) <- c('Rank','ID', 'Reputation', 'Steem Power', "ESP", 'Online', 'steem','sbd','VP','Account Value', 'Level', 'Intro','Character') #'level',
+    mymat[, 'Rank'] <- floor(rank(-mymat[, input$N]))
+    mymat <- mymat[order(mymat[, 'Rank']), ]
+    mymatout <- mymat[, c('Rank', 'ID', input$colsel)]
+    names(mymatout) <- zh$zh[match(names(mymatout), zh$en)]
+    mymatout
+  },
+  options = list(lengthMenu = c(36, 72, 108, nrow(whwechat)),
+                 pageLength = 108),
+  escape = FALSE
+  )
+}
+
+#' A shiny app to display and anaylize the CNers.
+#' scner means shiny app for CNers.
+#' @return a shinyapp which can be displayed in a web browser.
+#' @export
+scner <- function(){
+  return(shiny::shinyApp(ui = scner_ui, server = scner_server))
 }
