@@ -15,6 +15,3 @@ A character string of the hyperlink to the Steem id.
 \description{
 Convert an id from a character to html hyperlink
 }
-\examples{
-idlink("dapeng")
-}

@@ -6,7 +6,8 @@
 gaccounts means 'get account information'.}
 \usage{
 gaccounts(from = Sys.Date() - 7, to = Sys.Date(), select = c("name", "created", 
-    "post_count", "last_post"), sql_con, ylab = "Daily New Accounts", if_plot = FALSE)
+    "post_count", "last_post"), sql_con = NA, ylab = "Daily New Accounts", 
+    if_plot = FALSE)
 }
 \arguments{
 \item{from}{A Date object or character in '2017-10-24' format of the beginning of the period}

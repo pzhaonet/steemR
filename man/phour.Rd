@@ -5,7 +5,7 @@
 \title{Hour rose plot.
 \code{phour()} plotted a 24-hour clock, indicating the active hours on the basis of a time column in a data frame. It is highly cumstomized on the basis of the \code{openair::windrose()} function`.}
 \usage{
-phour(my_df, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2 = NA, 
+phour(my_df = NA, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2 = NA, 
     ws.int = 30, angle = 1, type = "default", cols = "default", grid.line = NULL, 
     width = 1, seg = 0.9, auto.text = TRUE, breaks = 4, offset = 10, paddle = FALSE, 
     key.header = NULL, key.footer = "(SBD)", key.position = "right", key = FALSE, 
@@ -14,6 +14,8 @@ phour(my_df, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2 = NA
 }
 \arguments{
 \item{my_df}{A data frame containing the fields ws and wd.}
+
+\item{col_time}{the column name for the time stamp}
 
 \item{ws}{A character string of the name of the column representing the radium of the circular sectors in the diagram. It can be SBD payout, votes, comments, etc..}
 
@@ -75,7 +77,9 @@ phour(my_df, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2 = NA
 
 \item{border}{A character string of the border colour for shaded areas.}
 
-\item{...}{}
+\item{quantile_line}{whether to display the quantile line}
+
+\item{...}{other parameters}
 }
 \value{
 A figure with the active hour rose
@@ -85,5 +89,5 @@ Hour rose plot.
 \code{phour()} plotted a 24-hour clock, indicating the active hours on the basis of a time column in a data frame. It is highly cumstomized on the basis of the \code{openair::windrose()} function`.
 }
 \examples{
-phour(my_df, breaks = seq(0, 24, 1), angle = 15, key.footer = "votes")
+phour()
 }

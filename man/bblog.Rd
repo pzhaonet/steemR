@@ -4,10 +4,10 @@
 \alias{bblog}
 \title{Build a hugo blog site for a steem author}
 \usage{
-bblog(author, post_df, dest_path = "blog", initial = FALSE, template = "xmin", 
-    post_df_source = c("appbase_api", "steemsql.com"), orginal_link = c("steemit.com", 
-        "cnsteem.com", "busy.org", "steemdb.com", "steemd.com"), 
-    my_github = "your_name/your_repo")
+bblog(author = NA, post_df, dest_path = "blog", initial = FALSE, 
+    template = "xmin", post_df_source = c("appbase_api", "steemsql.com"), 
+    orginal_link = c("steemit.com", "cnsteem.com", "busy.org", "steemdb.com", 
+        "steemd.com"), my_github = "your_name/your_repo")
 }
 \arguments{
 \item{author}{author name without @}
@@ -31,4 +31,9 @@ a blogdown-hugo web site
 }
 \description{
 Build a hugo blog site for a steem author
+}
+\examples{
+bblog()
+
+
 }

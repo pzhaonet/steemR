@@ -4,12 +4,13 @@
 #' @param dest_path A character string of the destination path for the markdown files.
 #' @param post_df_source A character string of the data frame source.
 #' @param if_yaml A logical value of whether the markdown files contain yaml headers.
-#' @param orginal_link A character string vector of the orginal links to the posts.
+#' @param original_link A character string vector of the orginal links to the posts.
 #'
 #' @return markdown files.
 #' @export
+#' @example bmd()
 #'
-bmd <- function(post_df,
+bmd <- function(post_df = NA,
                 dest_path = 'blog',
                 post_df_source = c('appbase_api', 'steemsql.com'),
                 if_yaml = FALSE,
@@ -19,6 +20,9 @@ bmd <- function(post_df,
                                  'steemdb.com',
                                  'steemd.com')
 ){
+  if(is.na(post_df)) {
+    return(print('Please give a valid data frame.'))
+  }
   post_df_source <- match.arg(post_df_source)
   if(!dir.exists(dest_path)){
     dir.create(dest_path)
@@ -97,9 +101,10 @@ bmd <- function(post_df,
 #'
 #' @return a blogdown-hugo web site
 #' @export
+#' @examples bblog()
 #'
 #'
-bblog <- function(author,
+bblog <- function(author = NA,
                   post_df,
                   dest_path = 'blog',
                   initial = FALSE,
@@ -111,6 +116,9 @@ bblog <- function(author,
                                    'steemdb.com',
                                    'steemd.com'),
                   my_github = 'your_name/your_repo'){
+  if(is.na(author)) {
+    return(print('Please give a valid author.'))
+  }
   post_df_source <- match.arg(post_df_source)
   # Set up for the first time
   if (initial) {

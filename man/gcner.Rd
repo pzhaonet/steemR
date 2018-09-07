@@ -4,10 +4,10 @@
 \alias{gcner}
 \title{Get the CNer name list}
 \usage{
-gcner(date = Sys.Date())
+gcner(mydate = Sys.Date())
 }
 \arguments{
-\item{date}{A Date or character string in '\%Y-%m-%d' format}
+\item{mydate}{A Date or character string in 'Y-m-d' format}
 }
 \value{
 a data frame of the CNer

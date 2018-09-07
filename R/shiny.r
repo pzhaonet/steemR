@@ -266,6 +266,182 @@ sfollow <- function(){
   return(shiny::shinyApp(ui = sfollow_ui, server = sfollow_server))
 }
 
+#' Plot function for the Shiny app scner
+#'
+#' @param i A numeric indicator
+#' @param sliderplot The ID of the sliderplot
+#' @param whwechat The data from of the cner
+#' @param zh The Chinese dictionary
+#'
+#' @return A diagram
+pcner <- function(i, sliderplot, whwechat, zh){
+  mymat <- whwechat
+  if (nrow(mymat) == 0) {
+    plot(1, type = "n", axes = FALSE, xlab = "", ylab = "")
+    text(1, 1, 'No data available!', col = 'red', cex = 2)
+  } else {
+    datatime =  format(Sys.time(), format = '%Y-%m-%d %H:%M:%S %Z')
+    par(mar = c(0,0,0,0))
+    # layout(mat = matrix(c(1, 1, 2, 2, 3, 4, 5, 5), nrow = 4, byrow = TRUE), heights = c(2, 2, 20, 2))
+    layout(mat = matrix(c(1:4), nrow = 4, byrow = TRUE), heights = c(2, 2, 20, 2))
+    plot(1, type = "n", axes = FALSE, xlab = "", ylab = "")
+    text(1, 1, zh$zh[zh$en =='Steem CN Wechat Hall'], col = 'steelblue', cex = 3)
+    plot(1, type = "n", axes = FALSE, xlab = "", ylab = "")
+    text(1, 1, datatime, cex = 2)
+    colplot <- c('esp', 'rep','online', 'value')
+
+    mymat <- mymat[!is.na(mymat[, colplot[i]]), ]
+    wcplot <- mymat[rev(order(mymat[, colplot[i]])), ][sliderplot[1]: sliderplot[2], ]
+    wordcloud::wordcloud(wcplot$name, freq = wcplot[, colplot[i]], colors = RColorBrewer::brewer.pal(4, "Dark2"), scale = c(4, 0.6))
+    # legend('bottomleft', legend = paste0(fignr[i], ' ', sliderplot[[i]][1], '-', sliderplot[[i]][2]), bty = 'n', cex = 2)
+  }
+  #    mywc <- function(freq) {
+  #   wcplot <- myfer[rev(order(myfer[, freq])), ][input$fr_slider[1]: input$fr_slider[2], ]
+  #   wordcloud(wcplot$Account, freq = wcplot[, freq], colors = brewer.pal(4, "Dark2"), scale = c(4, 0.6))
+  #   legend('top', legend = paste0(freq, ' Top 30'), bty = 'n', cex = 2)
+  # }
+  # lapply(c("Followers", "Posts", "vests"), mywc)
+  plot(1, type = "n", axes = FALSE, xlab = "", ylab = "")
+  text(1, 1, 'made by @dapeng', col = 'steelblue', cex = 2)
+}
+
+#' Plot a histogram of a vector.
+#'
+#' @param data A numeric vector to plot.
+#' @param mybreaks Breaks of the plotted bars.
+#' @param myxlim x limit.
+#' @param myylim y limit.
+#' @param eightlines Whether to draw the eight lines.
+#' @param eightdigit The digit number of the figures displayed on the diagram.
+#' @param eightcex The character size of the figures.
+#' @param eightcolors The colors of the eight lines.
+#' @param mylegend The legend.
+#' @param myxlab The x label.
+#' @param return_df Whether return the data frame of summary.
+#' @param myfreq Whether display the frequency,
+#' @param show_n Whether show the sample number.
+#' @param show_skewness Whether show the skewness test.
+#' @param show_density Whether show the density.
+#' @param show_normline Whether show the line of the normal distribution.
+#' @param show_mean Whether show the mean value.
+#'
+#' @return A histogram diagram.
+#' @export
+#'
+#'
+phist <- function(data = rnorm(1000),
+                  mybreaks = "Sturges",
+                  myxlim = NULL,
+                  myylim = NULL,
+                  eightlines = TRUE,
+                  eightdigit = 0,
+                  eightcex = 0.8,
+                  eightcolors = c('red','darkgreen','blue', 'black', 'purple', 'gold')[c(1,2,3,2,1,6,6,5,4,5)],
+                  mylegend = '',
+                  myxlab = '',
+                  return_df = FALSE,
+                  myfreq = FALSE,
+                  show_n = TRUE,
+                  show_skewness = TRUE,
+                  show_density = FALSE,
+                  show_normline = FALSE,
+                  show_mean = FALSE) {
+
+  # plot the hist
+  oldpar <- par(mar = c(4, 4, 0.5, 1), las = 1)
+  if (is.null(myxlim)) {
+    hist(data,
+         col = 'grey',
+         border = NA,
+         main = '',
+         freq = myfreq,
+         breaks = mybreaks,
+         xlab = myxlab,
+         ylim = myylim)
+  } else {
+    hist(data,
+         col = 'grey',
+         border = NA,
+         main = '',
+         freq = myfreq,
+         breaks = mybreaks,
+         xlab = myxlab,
+         xlim = myxlim,
+         ylim = myylim)
+  }
+
+  # add the density line
+  if (show_density) {
+    lines(density(data[!is.na(data)], bw = "SJ"))
+  }
+
+  # add the normal distribution line
+  if (show_normline) {
+    xnormline <- dnorm(x,
+                       mean = mean(data, na.rm = TRUE),
+                       sd(data, na.rm = TRUE))
+    curve(xnormline,
+          add = TRUE,
+          col = 'purple')
+  }
+
+  # add the rug line
+  rug(data, col = 'darkgrey')
+
+  # add the legend
+  legend('top', bty = 'n', legend = mylegend)
+  myskew <- skewness(data)
+  mylegend <- paste(ifelse(show_n,
+                           paste0('n = ', sum(!is.na(data)), '\n'),
+                           ''),
+                    ifelse(show_mean,
+                           paste0('mean = ', round(mean(data, na.rm = TRUE), 0),
+                                  '\n'), ''),
+                    ifelse(show_skewness,
+                           paste0('skewness = ', round(myskew, 2), ifelse(myskew > 1.96 | myskew < -1.96, '', '(*)')),
+                           ''),
+                    sep = '')
+  legend('right', bty = 'n',legend = mylegend)
+
+  # add the eight lines
+  if (eightlines) {
+    myfive <- fivenum(data)
+    threshold <- IQR(data, na.rm = TRUE) * 1.5
+    mtext(text = round(myfive, eightdigit),
+          side = 3,
+          line = c(-1.2, -2.2, -1.7, -2.2, -1.2),
+          at = myfive,
+          col = eightcolors[1:5],
+          cex = eightcex)
+    axis(3,
+         at = myfive[c(1, 3, 5)],
+         col.ticks = eightcolors[c(1, 3, 5)],
+         labels = rep('', 3),
+         tck = 0.02)
+    axis(3,
+         at = myfive[3],
+         col.ticks = eightcolors[3],
+         labels = '',
+         tck = 0.05)
+    axis(3,
+         at = myfive[c(2, 4)],
+         col.ticks = eightcolors[c(2, 4)],
+         labels = rep('', 2),
+         tck = 0.08)
+    mymean <- mean(data, na.rm = TRUE)
+  }
+  box()
+  par(oldpar)
+
+  # return the summary data frame
+  if (return_df) {
+    mydf <- data.frame(para = c('min', '1q', 'median', '3q', 'max',
+                                'lower', 'upper', 'mean', 'sd'),
+                       value =c(myfive, myfive[2] - threshold,
+                                myfive[4] + threshold, mymean, mysd))
+    return(mydf)
+  }
+}
 
 
 #' UI for the Shiny app scner display and analysis
@@ -278,7 +454,56 @@ scner_ui <- function(){
         ### Brief instruction
         h2("Steem CNers"),
         h4("Features: "),
-        "To display the statistics of the Steem CN Community."
+        "To display the statistics of the Steem CN Community.",
+        hr(),
+		### wordclouds for the CN members according to the SP, Rep, online days, or account value.
+        wellPanel(
+          plotOutput('wh_plot1'),
+          p(),
+          sliderInput("wh_slider_sp",
+                      "Rank in Wechat Group (Effective Steem Power)",
+                      min = 1,
+                      max = 108,
+                      value = c(1, 36)
+          ),
+          p(),
+          hr(),
+          plotOutput('wh_plot2'),
+          p(),
+          sliderInput("wh_slider_rep",
+                      "Rank in Wechat Group (Reputation)",
+                      min = 1,
+                      max = 108,
+                      value = c(1, 36)
+          ),
+          p(),
+          hr(),
+          plotOutput('wh_plot3'),
+          p(),
+          sliderInput("wh_slider_online",
+                      "Rank in Wechat Group (Online)",
+                      min = 1,
+                      max = 108,
+                      value = c(1, 36)
+          ),
+          p(),
+          hr(),
+          plotOutput('wh_plot4'),
+          p(),
+          sliderInput("wh_slider_value",
+                      "Rank in Wechat Group (ID Value)",
+                      min = 1,
+                      max = 108,
+                      value = c(1, 36)
+
+          )),
+
+### histograms of the distribution according to ESP, SP, Rep, online days, and account value.
+        plotOutput('wh_phist_esp'),
+        plotOutput('wh_phist_sp'),
+        plotOutput('wh_phist_rep'),
+        plotOutput('wh_phist_online'),
+        plotOutput('wh_phist_value')
       ),
 
       mainPanel(
@@ -340,6 +565,33 @@ scner_server <- function(input, output, session) {
   names(zh) <- c('en', 'zh')
 
   slmax <- nrow(whwechat)
+  ### update the sliders for the word clouds
+  # Control the value, min, max, and step.
+  # Step size is 2 when input value is even; 1 when value is odd.
+  updateSliderInput(session,
+                    "wh_slider_sp",
+                    value = c(1, ifelse(slmax > 36, 36, slmax)),
+                    min = 1,
+                    max = slmax,
+                    step = 1)
+  updateSliderInput(session,
+                    "wh_slider_rep",
+                    value = c(1, ifelse(slmax > 36, 36, slmax)),
+                    min = 1,
+                    max = slmax,
+                    step = 1)
+  updateSliderInput(session,
+                    "wh_slider_online",
+                    value = c(1, ifelse(slmax > 36, 36, slmax)),
+                    min = 1,
+                    max = slmax,
+                    step = 1)
+  updateSliderInput(session,
+                    "wh_slider_value",
+                    value = c(1, ifelse(slmax > 36, 36, slmax)),
+                    min = 1,
+                    max = slmax,
+                    step = 1)
 
   observe({
     ### Get the ID to query
@@ -417,6 +669,65 @@ scner_server <- function(input, output, session) {
                  pageLength = 108),
   escape = FALSE
   )
+
+### create the wordcloud diagrams
+  output$wh_plot1 <- renderPlot({
+    pcner(1,
+          whwechat = whwechat,
+          input$wh_slider_sp,
+          zh = zh)
+  })
+
+  output$wh_plot2 <- renderPlot({
+    pcner(2,
+          whwechat = whwechat,
+          input$wh_slider_rep,
+          zh = zh)
+  })
+
+  output$wh_plot3 <- renderPlot({
+    pcner(3,
+          whwechat = whwechat,
+          input$wh_slider_online,
+          zh = zh)
+  })
+  output$wh_plot4 <- renderPlot({
+    pcner(4,
+          whwechat = whwechat,
+          input$wh_slider_value,
+          zh = zh)
+  })
+
+  ### create the histograms of the distributions
+  output$wh_phist_rep <- renderPlot({
+    phist(whwechat$rep,
+          show_density = TRUE,
+          myxlab = 'Reputation')
+  })
+  output$wh_phist_online <- renderPlot({
+    phist(whwechat$online,
+          show_density = TRUE,
+          myxlab = 'Online Days',
+          myylim = c(0, 0.015))
+  })
+  output$wh_phist_sp <- renderPlot({
+    phist(whwechat$sp,
+          show_density = TRUE,
+          myxlab = 'Steem Power')
+  })
+  output$wh_phist_esp <- renderPlot({
+    phist(whwechat$esp,
+          show_density = TRUE,
+          myxlab = 'Effective Steem Power',
+          myylim = c(0, 0.001))
+  })
+  output$wh_phist_value <- renderPlot({
+    phist(whwechat$value,
+          show_density = TRUE,
+          myxlab = 'Account Value',
+          myylim = c(0, 0.002))
+  })
+
 }
 
 #' A shiny app to display and anaylize the CNers.

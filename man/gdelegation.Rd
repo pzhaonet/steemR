@@ -5,7 +5,7 @@
 \title{Get the delegation information of a Steem ID from SteemSQL
 gdelegation means 'get delegation information'.}
 \usage{
-gdelegation(id, sql_con, if_plot = FALSE)
+gdelegation(id = NA, sql_con, if_plot = FALSE)
 }
 \arguments{
 \item{id}{A character string of a Steem ID}

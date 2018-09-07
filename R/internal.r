@@ -35,7 +35,6 @@ unitconvert <- function(x){
 #' @return A character string of the hyperlink to the Steem id.
 #'
 #' @examples
-#' idlink('dapeng')
 idlink <- function(id = NA) {
   paste0('<a href="https://steemit.com/@', id, '">@', id, '</a>')
 }
@@ -46,11 +45,14 @@ idlink <- function(id = NA) {
 #' @param dataframe A column of a dataframe with characters to split
 #'
 #' @return A character vector
-#'
-#' @examples charsplit()
 charsplit <- function(dataframe = NA){
-  char_all <- paste(dataframe, collapse = ' ')
-  char_single <- strsplit(char_all, split = ' ')[[1]]
+  if(is.na(dataframe)) {
+    char_single <- NA
+  } else {
+    char_all <- paste(dataframe, collapse = ' ')
+    char_single <- strsplit(char_all, split = ' ')[[1]]
+  }
+  return(char_single)
 }
 
 
@@ -81,4 +83,17 @@ whale <- function(x){
   if (x > y[3]) return(3)
   if (x > y[2]) return(2)
   if (x >= y[1]) return(1)
+}
+
+#' Calculate the skewness
+#'
+#' @param x The data for calculation.
+#'
+#' @return The skewness
+skewness <- function(x){
+  x <- x[!is.na(x)]
+  n <- length(x)
+  skewness <- n / (n-1) / (n-2) * sum((x - mean(x)) ^ 3) / sd(x) ^3
+  se_skewness <- sqrt(6/length(x))
+  return(skewness/se_skewness)
 }

@@ -21,5 +21,5 @@ A list or a dataframe of an ID's detailed info
 Get an ID's detailed info. gid means 'get an ID's information'.
 }
 \examples{
-gid(id = "dapeng")
+gid()
 }

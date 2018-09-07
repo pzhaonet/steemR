@@ -2,9 +2,9 @@
 % Please edit documentation in R/get.r
 \name{gblog}
 \alias{gblog}
-\title{Rename the getBlog() function from the steemr2 package}
+\title{Rename the getBlog() function from the steemRdata package}
 \usage{
-gblog(id)
+gblog(id = NA)
 }
 \arguments{
 \item{id}{A Steem ID}
@@ -13,8 +13,8 @@ gblog(id)
 A dataframe with the ID's posts
 }
 \description{
-Rename the getBlog() function from the steemr2 package
+Rename the getBlog() function from the steemRdata package
 }
 \examples{
-gblog("dapeng")
+gblog()
 }

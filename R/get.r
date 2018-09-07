@@ -31,7 +31,7 @@ ssql <- function(uid = NA,
 #' @export
 #'
 #' @examples
-#' gid(id = 'dapeng')
+#' gid()
 gid <- function(id = NA,
                 method = c('appbase_api',
                            'steemdb.com',
@@ -59,7 +59,7 @@ gid <- function(id = NA,
                                stringsAsFactors = FALSE)
     return(info_df)
   } else if(method == 'appbase_api') {
-    info_df <- steemr2::getAccount(username = id)
+    info_df <- steemRdata::getAccount(username = id)
     info_df <- cbind(id = id, info_df)
     return(info_df)
   } else if(method == 'steemdata.com') {
@@ -369,7 +369,7 @@ gpost <- function(postlink = NA,
 #' @export
 #'
 #' @examples
-#' gidpostl('dapeng')
+#' gidpostl()
 gidpostl <- function(id = NA,
                      method = c('steemdb.com',
                                 'steemsql.com',
@@ -393,7 +393,7 @@ gidpostl <- function(id = NA,
     }
     return(paste0('https://', site, postlinks))
 
-    } else if(method == 'steemsql.com') {
+  } else if(method == 'steemsql.com') {
     post_query <- paste0("SELECT url
                             FROM Comments
                             WHERE
@@ -470,7 +470,7 @@ gposts <- function(postlinks = NA,
 #' @export
 #'
 #' @examples
-#' gidposts('dapeng')
+#' gidposts()
 gidposts <- function(id = NA,
                      method = c('steemdb.com',
                                 'steemsql.com',
@@ -505,7 +505,7 @@ gidposts <- function(id = NA,
                                  stringsAsFactors = FALSE)
 
   } else if(method == 'appbase_api') {
-    mypost_id <- steemr2::getBlog(username = id)
+    mypost_id <- steemRdata::getBlog(username = id)
 
   } else if(method == 'steemdata.com') {
     myurl <- "mongodb://steemit:steemit@mongo1.steemdata.com:27017/SteemData"
@@ -515,16 +515,17 @@ gidposts <- function(id = NA,
   return(mypost_id)
 }
 
-#' Rename the getBlog() function from the steemr2 package
+#' Rename the getBlog() function from the steemRdata package
 #'
 #' @param id A Steem ID
 #'
 #' @return A dataframe with the ID's posts
 #' @export
 #'
-#' @examples gblog('dapeng')
-gblog <- function(id){
-  steemr2::getBlog(id)
+#' @examples gblog()
+gblog <- function(id = NA){
+  if(is.na(id)) return(print('Please give a valid ID.'))
+  steemRdata::getBlog(id)
 }
 
 #' Get the Steem account information within a period from SteemSQL
@@ -543,9 +544,10 @@ gblog <- function(id){
 gaccounts <- function(from = Sys.Date() - 7,
                       to = Sys.Date(),
                       select = c('name', 'created', 'post_count', 'last_post'),
-                      sql_con,
+                      sql_con = NA,
                       ylab = 'Daily New Accounts',
                       if_plot = FALSE){
+  if(is.na(sql_con)) return(print('Please give a valid sql_con value.'))
   from <- as.Date(from)
   to <- as.Date(to)
   select <- paste(select, collapse = ', ')
@@ -626,40 +628,44 @@ gcomments <- function(id = NA,
 #' @export
 #'
 #' @examples gdelegation()
-gdelegation <- function(id,
+gdelegation <- function(id = NA,
                         sql_con,
                         if_plot = FALSE){
-  # query the data from the server
-  sql_query <- paste0("SELECT *
+  if(is.na(id)) {
+    return(print('Please give a valid id.'))
+  } else{
+    # query the data from the server
+    sql_query <- paste0("SELECT *
                       FROM TxDelegateVestingShares
                       WHERE delegator = '", id,
-                      "' OR delegatee = '", id, "'")
-  dele_df <- RODBC::sqlQuery(channel = sql_con,
-                             query = sql_query,
-                             stringsAsFactors = FALSE)
+                        "' OR delegatee = '", id, "'")
+    dele_df <- RODBC::sqlQuery(channel = sql_con,
+                               query = sql_query,
+                               stringsAsFactors = FALSE)
 
-  # plot the data
-  if(if_plot) {
-    dele2 <- ifelse(dele_df$delegator == id,
-                    - dele_df$vesting_shares,
-                    dele_df$vesting_shares)
-    who <- as.factor(ifelse(dele_df$delegator == id,
-                            dele_df$delegatee,
-                            dele_df$delegator))
-    mycol <- rainbow(nlevels(who))[who]
-    plot(dele_df$timestamp,
-         dele2,
-         type = 'h',
-         col = mycol,
-         xlab = 'Date',
-         ylab = 'Delegation')
-    text(dele_df$timestamp,
-         dele2,
-         labels = who,
-         col = mycol)
-    abline(h = 0)
+    # plot the data
+    if(if_plot) {
+      dele2 <- ifelse(dele_df$delegator == id,
+                      - dele_df$vesting_shares,
+                      dele_df$vesting_shares)
+      who <- as.factor(ifelse(dele_df$delegator == id,
+                              dele_df$delegatee,
+                              dele_df$delegator))
+      mycol <- rainbow(nlevels(who))[who]
+      plot(dele_df$timestamp,
+           dele2,
+           type = 'h',
+           col = mycol,
+           xlab = 'Date',
+           ylab = 'Delegation')
+      text(dele_df$timestamp,
+           dele2,
+           labels = who,
+           col = mycol)
+      abline(h = 0)
+    }
+    return(dele_df)
   }
-  return(dele_df)
 }
 
 
@@ -680,15 +686,15 @@ gspmv <- function(){
 
 #' Get the CNer name list
 #'
-#' @param date A Date or character string in '\%Y-%m-%d' format
+#' @param mydate A Date or character string in 'Y-m-d' format
 #'
 #' @return a data frame of the CNer
 #' @export
 #'
 #' @examples gcner()
-gcner <- function(date = Sys.Date()){
+gcner <- function(mydate = Sys.Date()){
   # download data
-  url <- paste0('https://uploadbeta.com/api/steemit/wechat/?cached&date=', date)
+  url <- paste0('https://uploadbeta.com/api/steemit/wechat/?cached&date=', mydate)
   raw.result <- httr::GET(url = url)
   repo_content <- httr::content(raw.result)
   # format the data

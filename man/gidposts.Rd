@@ -23,5 +23,5 @@ A data frame of an ID's post detailed info.
 Obtain an ID's post detailed info from steemdb.com. 'gidposts' means 'get an ID's posts'.
 }
 \examples{
-gidposts("dapeng")
+gidposts()
 }

@@ -40,40 +40,43 @@ avotenot <- function(postlink = NA){
 avotep <- function(mypost = NA,
                    if_plot = TRUE,
                    top = 10){
-  # pre calculation
-  voter <- data.frame(
-    voter = charsplit(dataframe = mypost$voter),
-    rshares = as.numeric(charsplit(dataframe = mypost$voter.rshares)),
-    percent = as.numeric(charsplit(dataframe = mypost$voter.percent)) / 100,
-    row.names = NULL
-  )
+  if(is.na(mypost)) {
+    voter_sum <- NA
+  } else {
+    # pre calculation
+    voter <- data.frame(
+      voter = charsplit(dataframe = mypost$voter),
+      rshares = as.numeric(charsplit(dataframe = mypost$voter.rshares)),
+      percent = as.numeric(charsplit(dataframe = mypost$voter.percent)) / 100,
+      row.names = NULL
+    )
 
-  # summry of voters
-  voter_sum <- beginr::tapplydf(data = voter,
-                                select = 'rshares',
-                                myfactor = 'voter',
-                                sum)
-  voter_percent <- beginr::tapplydf(data = voter,
-                                    select = 'percent',
-                                    myfactor = 'voter',
-                                    mean)
-  voter_sum <- merge(voter_sum,
-                     voter_percent,
-                     by = 'voter')
-  voter_sum$percentage <- voter_sum$rshares / sum(voter_sum$rshares)
-  voter_sum <- voter_sum[rev(order(voter_sum$rshares)), ]
-  row.names(voter_sum) <- 1:nrow(voter_sum)
+    # summry of voters
+    voter_sum <- beginr::tapplydf(data = voter,
+                                  select = 'rshares',
+                                  myfactor = 'voter',
+                                  sum)
+    voter_percent <- beginr::tapplydf(data = voter,
+                                      select = 'percent',
+                                      myfactor = 'voter',
+                                      mean)
+    voter_sum <- merge(voter_sum,
+                       voter_percent,
+                       by = 'voter')
+    voter_sum$percentage <- voter_sum$rshares / sum(voter_sum$rshares)
+    voter_sum <- voter_sum[rev(order(voter_sum$rshares)), ]
+    row.names(voter_sum) <- 1:nrow(voter_sum)
 
-  # plot the pie diagram
-  if (if_plot) {
-    pie_df <- voter_sum[voter_sum$percentage >= 0,
-                        c('voter', 'percentage')]
-    if (nrow(pie_df) > top) {
-      pie_df <- pie_df[1:top, ]
+    # plot the pie diagram
+    if (if_plot) {
+      pie_df <- voter_sum[voter_sum$percentage >= 0,
+                          c('voter', 'percentage')]
+      if (nrow(pie_df) > top) {
+        pie_df <- pie_df[1:top, ]
+      }
+      pie = pie(pie_df$percentage, labels = pie_df$voter)
     }
-    pie = pie(pie_df$percentage, labels = pie_df$voter)
   }
-
   return(voter_sum)
 }
 
@@ -99,9 +102,9 @@ adailyf <- function(mydata,
   daily$date <- as.Date(daily$date)
   if(if_plot) {
     pdate(x = daily$date, y = daily$Freq, myxlim = range(daily$date),
-         myylim = c(0, max(daily$Freq, na.rm = TRUE) + 1),
-         myylab = ylab,
-         mycol = col)
+          myylim = c(0, max(daily$Freq, na.rm = TRUE) + 1),
+          myylab = ylab,
+          mycol = col)
   }
   return(daily)
 }

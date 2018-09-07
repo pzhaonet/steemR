@@ -4,7 +4,7 @@
 \alias{bmd}
 \title{build markdown files from the posts}
 \usage{
-bmd(post_df, dest_path = "blog", post_df_source = c("appbase_api", "steemsql.com"), 
+bmd(post_df = NA, dest_path = "blog", post_df_source = c("appbase_api", "steemsql.com"), 
     if_yaml = FALSE, original_link = c("steemit.com", "cnsteem.com", "busy.org", 
         "steemdb.com", "steemd.com"))
 }
@@ -17,7 +17,7 @@ bmd(post_df, dest_path = "blog", post_df_source = c("appbase_api", "steemsql.com
 
 \item{if_yaml}{A logical value of whether the markdown files contain yaml headers.}
 
-\item{orginal_link}{A character string vector of the orginal links to the posts.}
+\item{original_link}{A character string vector of the orginal links to the posts.}
 }
 \value{
 markdown files.

@@ -15,6 +15,3 @@ A character vector
 \description{
 Split the characters in a data frame
 }
-\examples{
-charsplit()
-}
