@@ -136,6 +136,7 @@ More functions are coming soon. Have fun!
 
 ## Updates
 
+- 2018-09-07. New functions: `sposts()` and `gur()`.
 - 2018-09-06. Image display on `scner()`.
 - 2018-09-05. New functions: `scner()`.
 - 2018-08-08. Wordclouds and Venn diagrams added to `sfollow()`.

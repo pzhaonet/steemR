@@ -33,8 +33,6 @@ unitconvert <- function(x){
 #' @param id A character string of a Steem ID without '@'.
 #'
 #' @return A character string of the hyperlink to the Steem id.
-#'
-#' @examples
 idlink <- function(id = NA) {
   paste0('<a href="https://steemit.com/@', id, '">@', id, '</a>')
 }
@@ -96,4 +94,17 @@ skewness <- function(x){
   skewness <- n / (n-1) / (n-2) * sum((x - mean(x)) ^ 3) / sd(x) ^3
   se_skewness <- sqrt(6/length(x))
   return(skewness/se_skewness)
+}
+
+#' Retrieve tags from json_str of a post
+#'
+#' @param post_json_str json string with tag information
+#'
+#' @return tags
+tag_of_post <- function(post_json_str) {
+  post_json_str <- stringi::stri_trans_general(post_json_str, "latin-ascii")
+  if (sum(nchar(post_json_str) == 0)) return(NA)
+  y <- rjson::fromJSON(json_str = post_json_str, unexpected.escape = 'keep')
+  if ("tags" %in% names(y)) return(unname(y$tags))
+  NA
 }

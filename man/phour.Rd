@@ -2,7 +2,7 @@
 % Please edit documentation in R/plothour.r
 \name{phour}
 \alias{phour}
-\title{Hour rose plot.
+\title{Hour rose plot. Copied and modified from the openair package.
 \code{phour()} plotted a 24-hour clock, indicating the active hours on the basis of a time column in a data frame. It is highly cumstomized on the basis of the \code{openair::windrose()} function`.}
 \usage{
 phour(my_df = NA, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2 = NA, 
@@ -85,7 +85,7 @@ phour(my_df = NA, col_time = "created", ws = "ws", wd = "hour360", ws2 = NA, wd2
 A figure with the active hour rose
 }
 \description{
-Hour rose plot.
+Hour rose plot. Copied and modified from the openair package.
 \code{phour()} plotted a 24-hour clock, indicating the active hours on the basis of a time column in a data frame. It is highly cumstomized on the basis of the \code{openair::windrose()} function`.
 }
 \examples{

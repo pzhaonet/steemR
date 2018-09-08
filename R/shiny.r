@@ -208,7 +208,7 @@ sfollow_server <- function(input, output, session) {
         wcplot <- myfer[rev(order(myfer[, colplot[i]])), ][sliderplot[[i]][1]: sliderplot[[i]][2], ]
         wordcloud::wordcloud(wcplot$Account,
                              freq = wcplot[, colplot[i]],
-                             colors = RColorBrewer::l(4, "Dark2"),
+                             colors = RColorBrewer::brewer.pal(4, "Dark2"),
                              scale = c(4, 0.6))
         legend('top',
                legend = paste0(colplot[i],
@@ -737,3 +737,181 @@ scner_server <- function(input, output, session) {
 scner <- function(){
   return(shiny::shinyApp(ui = scner_ui, server = scner_server))
 }
+
+
+
+#' UI for the Shiny app sposts display and analysis
+#'
+#' @return A UI function
+sposts_ui <- function(){
+  fluidPage(
+    sidebarLayout(
+      mainPanel(
+        h4("Input a Steem ID and Enter to display all his/her posts."),
+        wellPanel(
+	  ### Get an ID of a Steemian
+          h4("Steem ID:"),
+          tags$script(' $(document).on("keydown", function (e) {
+                      Shiny.onInputChange("lastkeypresscode2", e.keyCode);
+});
+                      '),
+          textInput('ps_id', label = '', value = 'dapeng'),
+		  ### Display the posts of the given ID
+          dataTableOutput('ps_dt')
+        )
+        ),
+
+      sidebarPanel(
+        wellPanel(
+		### Display the growth of the given ID.
+          h4("Cumulative Payouts Growth"),
+          plotOutput('ps_plot2', height = 200),
+          hr(),
+          h4("Cumulative Votes Growth"),
+          plotOutput('ps_plot1', height = 200),
+          hr(),
+          h4("Cumulative Posts Growth"),
+          plotOutput('ps_plot3', height = 200),
+          hr(),
+		### Display the statistics of the given ID.
+          h4("Distribution of post payout"),
+          'blue: median, red: range, green: 1- and 3-quantiles.',
+          p(),
+          plotOutput('ps_plot5', height = 300),
+          hr(),
+          h4("Distribution of post votes"),
+          'blue: median, red: range, green: 1- and 3-quantiles.',
+          plotOutput('ps_plot6', height = 300),
+          hr(),
+          h4("Active hours (UTC)"),
+          plotOutput('ps_plot4')
+        )
+      ),
+      position = "left"
+    )
+  )
+}
+
+
+#' Server for the Shiny app sposts display and analysis
+#'
+#' @param input The input of the server.
+#' @param output The output of the server.
+#' @param session The session of the server.
+sposts_server <- function(input, output, session) {
+### Get the ID and query the posts.
+  observe({
+    if(!is.null(input$lastkeypresscode2)) {
+      if(input$lastkeypresscode2 == 13){
+        if (is.null(input$ps_id) || input$ps_id == "") return()
+        mypsid <- tolower(gsub('@', '', input$ps_id))
+        myposts <-  gidposts(id = mypsid, method = 'appbase_api')
+### Process the data of the posts
+        if (nrow(myposts) == 0){
+          output$ps_dt = renderDataTable({
+            data.frame(message = paste0('No post by @', mypsid))
+          },
+          options = list(lengthMenu = 1),
+          escape = FALSE
+          )
+        } else {
+          myposts <- myposts[order(myposts$datetime), ]
+          myposts$title <- paste0('<a href="https://steemit.com/',
+                                  myposts$category,
+                                  '/@', mypsid, '/',
+                                  myposts$permlink, '">',
+                                  myposts$title , '</a>')
+          sites <- c('cnsteem.com', 'busy.org', 'steemdb.com', 'steemd.com')
+          sitesshort <- sapply(sites, function(x) strsplit(x, '\\.')[[1]][1])
+          for (i in 1:length(sites)) {
+            myposts[, paste0('site ', i)] <- paste0('<a href="https://',
+                                                    sites[i], '/',
+                                                    myposts$category,
+                                                    '/@', mypsid, '/',
+                                                    myposts$permlink, '">',
+                                                    sitesshort[i] , '</a>')
+          }
+          names(myposts)[names(myposts) == 'total_payout'] <- 'payout'
+          output$ps_dt = renderDataTable({
+            myposts[, c("datetime", "title", "payout", "votes", "comments", "category", "tags", "site 1", "site 2", "site 3", "site 4")]
+          },
+          options = list(lengthMenu = c(10, 20, 50, 100, nrow(myposts)),
+                         # width = '100px',
+                         # targets = c(3:8),
+                         pageLength = 10),
+          escape = FALSE
+          )
+          myposts$cum_posts <- 1:nrow(myposts)
+          myposts$cum_payout <- cumsum(myposts$payout)
+          myposts$cum_votes <- cumsum(myposts$votes)
+          # myposts$rep <- repcalc(myposts$author_reputation)
+          myxlim <- range(myposts$date)
+
+		  ### create the scatter plots for the time series
+          output$ps_plot1 <- renderPlot({
+            pdate(myposts$date,
+                  myposts$cum_votes,
+                  mylegend = paste0('Votes@', mypsid),
+                  myxlim = myxlim,
+                  mycol = 'blue')
+          })
+          output$ps_plot2 <- renderPlot({
+            pdate(myposts$date,
+                  myposts$cum_payout,
+                  mylegend = paste0('Payout(SBD)@', mypsid),
+                  myxlim = myxlim,
+                  mycol = 'red')
+          })
+          output$ps_plot3 <- renderPlot({
+            pdate(myposts$date,
+                  myposts$cum_posts,
+                  mylegend = paste0('Posts@', mypsid),
+                  myxlim = myxlim)
+          })
+
+		  ### create the hour rose of the active time
+          output$ps_plot4 <- renderPlot({
+            phour(myposts, col_time = 'datetime')
+          })
+
+### create the histograms of the distributions
+          output$ps_plot5 <- renderPlot({
+            phist(myposts$payout,
+                  myxlab = 'Payout of a post (SBD)',
+                  show_skewness = FALSE,
+                  show_mean = TRUE,
+                  myfreq = TRUE)
+          })
+          output$ps_plot6 <- renderPlot({
+            phist(myposts$votes,
+                  myxlab = 'Votes of a post',
+                  show_skewness = FALSE,
+                  show_mean = TRUE,
+                  myfreq = TRUE)
+          })
+        }
+      }
+    }
+  })
+}
+
+
+#' Calculate the reputation of an ID
+#'
+#' @param rep A numeric value of the raw reputation.
+#'
+#' @return A numeric value of the real reputation
+repcalc <- function(rep){
+  if (rep > -1000000000 & rep < 1000000000) return(25)
+  log10(as.numeric(rep)) * 9 - 56
+}
+
+#' A shiny app to display and anaylize the posts of a given ID.
+#' sposts means shiny app for posts.
+#'
+#' @return a shinyapp which can be displayed in a web browser.
+#' @export
+sposts <- function(){
+  return(shiny::shinyApp(ui = sposts_ui, server = sposts_server))
+}
+

@@ -12,9 +12,9 @@ gidposts(id = NA, method = c("steemdb.com", "steemsql.com", "appbase_api",
 
 \item{method}{A character string of the Steem data server to connect.}
 
-\item{post_number}{A numeric value or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.}
+\item{sql_con}{A connection to the SteemSQL server.}
 
-\item{steemsql_connection}{A connection to the SteemSQL server.}
+\item{post_number}{A numeric value or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.}
 }
 \value{
 A data frame of an ID's post detailed info.

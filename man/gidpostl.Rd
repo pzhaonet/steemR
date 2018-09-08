@@ -12,11 +12,11 @@ gidpostl(id = NA, method = c("steemdb.com", "steemsql.com", "steemdata.com"), sq
 
 \item{method}{A character string of the Steem data server to connect.}
 
+\item{sql_con}{A connection to the SteemSQL server.}
+
 \item{post_number}{A numeric value or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.}
 
 \item{site}{A character string of the site of the steem web UI}
-
-\item{steemsql_connection}{A connection to the SteemSQL server.}
 }
 \value{
 A character string vector of an ID's post hyperlinks.

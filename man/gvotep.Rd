@@ -7,7 +7,7 @@
 gvotep(postlink = NA)
 }
 \arguments{
-\item{post}{A character string of the complete link of a post on steemit}
+\item{postlink}{A character string of the link of a post}
 }
 \value{
 A dataframe of a post's voter information
@@ -16,5 +16,5 @@ A dataframe of a post's voter information
 A post's vote report based on steemdb.com. gvotep means 'get the vote information of a post.'
 }
 \examples{
-gvotep("cn/@dapeng/steemit-markdown")
+gvotep()
 }

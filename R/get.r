@@ -4,6 +4,10 @@
 #' @param pwd A character string of the SteemSQL password.
 #'
 #' @return A connection to the SeemSQL server.
+#' @importFrom grDevices rainbow
+#' @importFrom graphics abline axis axis.Date barplot box curve hist layout legend lines mtext par plot rug text
+#' @importFrom stats IQR density dnorm fivenum formula na.omit quantile rnorm sd
+#' @importFrom utils unzip write.table modifyList
 #' @export
 #'
 #' @examples ssql()
@@ -186,13 +190,13 @@ gfollower <- function(id = NA){
 
 #' A post's vote report based on steemdb.com. gvotep means 'get the vote information of a post.'
 #'
-#' @param post A character string of the complete link of a post on steemit
+#' @param postlink A character string of the link of a post
 #'
 #' @return A dataframe of a post's voter information
 #' @export
 #'
 #' @examples
-#' gvotep('cn/@dapeng/steemit-markdown')
+#' gvotep()
 gvotep <- function(postlink = NA){
   if(is.na(postlink)) {
     return(message('Please give a valid link.'))
@@ -361,9 +365,9 @@ gpost <- function(postlink = NA,
 #'
 #' @param id A character string of a Steem ID without '@'.
 #' @param method A character string of the Steem data server to connect.
-#' @param steemsql_connection A connection to the SteemSQL server.
 #' @param post_number A numeric value or NA. The number of the latest posts to be obtained. If NA, the 100 latest posts will be processed.
 #' @param site A character string of the site of the steem web UI
+#' @param sql_con A connection to the SteemSQL server.
 #'
 #' @return A character string vector of an ID's post hyperlinks.
 #' @export
@@ -463,7 +467,7 @@ gposts <- function(postlinks = NA,
 #'
 #' @param id A character string of a Steem ID without '@'.
 #' @param method A character string of the Steem data server to connect.
-#' @param steemsql_connection A connection to the SteemSQL server.
+#' @param sql_con A connection to the SteemSQL server.
 #' @param post_number A numeric value or NA. The number of the latest posts to be obtained. If NA, all the posts will be processed.
 #'
 #' @return A data frame of an ID's post detailed info.
@@ -536,6 +540,7 @@ gblog <- function(id = NA){
 #' @param select A character string vector of the column names
 #' @param if_plot A logic value of whether plot the time series
 #' @param sql_con A SQL connection
+#' @param ylab Label on the y-axis
 #'
 #' @return A data frame of the account information with a figure
 #' @export
@@ -579,6 +584,7 @@ gaccounts <- function(from = Sys.Date() - 7,
 #' @param select A character string vector of the column names
 #' @param sql_con A SQL connection
 #' @param if_plot A logic value of whether plot the time series
+#' @param ylab Label on the y-axis
 #'
 #' @return A data frame of the comment information with a figure
 #' @export
@@ -718,4 +724,66 @@ gcner <- function(mydate = Sys.Date()){
   mymat$level <- unlist(sapply(mymat$esp, whale))
   mymat$intro <- "NA"
   mymat[, c('N', 'id', mycol[2:length(mycol)], 'level', 'intro','name')] #'level',
+}
+
+
+#' Get the utopian review data
+#'
+#' @param id character. The ID to search in the utopian review plan.
+#' @param show_all logic.
+#'
+#' @return A dataframe
+#' @export
+#'
+#' @examples gur()
+gur <- function(id = NA, show_all = TRUE){
+  url_feed <- 'https://utopian.rocks/'
+  url_queue <- 'https://utopian.rocks/queue'
+
+  clear_author <- function(x) {
+    loc1 <- gregexpr('>', x)[[1]][1] + 2
+    loc2 <- gregexpr('<', x)[[1]][2] - 1
+    substr(x, loc1, loc2)
+  }
+  clear_postlink <- function(x) {
+    loc1 <- gregexpr('>', x)[[1]][1] + 1
+    loc2 <- gregexpr('<', x)[[1]][2] - 1
+    substr(x, loc1, loc2)
+  }
+
+  clear_page <- function(url, status, by){
+    page <- readLines(url, encoding = 'UTF-8', warn = FALSE)
+    page <- page[(which(page == '</header>') + ifelse(status == 'waiting for review', 7, 17)) : (which(page == '    <div class="footer">') - ifelse(status == 'waiting for review', 3, 54))]
+    n <- length(page)/by
+    author <- page[seq(from = 8, by = by, length.out = n)]
+    postlink <- page[seq(from = 11, by = by, length.out = n)]
+    ctgr <- page[seq(from = 15, by = by, length.out = n)]
+    page_df <- data.frame(n = 1:n,
+                          author = sapply(author, clear_author),
+                          status = status,
+                          category = gsub(' ', '',  ctgr),
+                          postlink = sapply(postlink, clear_postlink),
+                          row.names = NULL
+    )
+    return(page_df)
+  }
+
+  ur <- rbind(clear_page(url_feed, 'waiting for review', by = 20),
+              clear_page(url_queue, 'waiting for vote', by = 24))
+  if(id %in% ur$author) {
+    ur_slct <- subset(ur, author == id)
+  } else {
+    ur_slct <- message('No record of the given ID is found.')
+  }
+  ur_ls <- list(found = ur_slct,
+                all = ur)
+  if(show_all) {
+    if(is.na(id)) {
+      return(ur)
+    } else {
+      return(ur_ls)
+    }
+  } else{
+    return(ur_slct)
+  }
 }

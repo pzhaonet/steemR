@@ -20,6 +20,7 @@ xatf <- function(x) {
 #' @param mylegend A character string of the legend.
 #' @param mycol A color.
 #' @param myxlim A Date vector of the date range of x.
+#' @param myylim A Date vector of the date range of y.
 #'
 #' @return A time series diagram.
 #' @export

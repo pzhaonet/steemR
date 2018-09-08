@@ -19,6 +19,8 @@ pdate(x, y, myylab = "", mylegend = "", mycol = "darkgreen", myxlim = NULL,
 \item{mycol}{A color.}
 
 \item{myxlim}{A Date vector of the date range of x.}
+
+\item{myylim}{A Date vector of the date range of y.}
 }
 \value{
 A time series diagram.

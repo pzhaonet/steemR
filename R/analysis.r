@@ -12,7 +12,7 @@ avotenot <- function(postlink = NA){
     return(message('Please give a valid id.'))
   }
 
-  vr_votes <- gvotep(post = postlink)$Voter
+  vr_votes <- gvotep(postlink)$Voter
   postlink <- paste0('https://steemdb.com/', postlink)
   vr_id <- substr(strsplit(postlink, '/')[[1]][5],
                   2,

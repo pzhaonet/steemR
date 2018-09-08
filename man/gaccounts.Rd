@@ -18,6 +18,8 @@ gaccounts(from = Sys.Date() - 7, to = Sys.Date(), select = c("name", "created",
 
 \item{sql_con}{A SQL connection}
 
+\item{ylab}{Label on the y-axis}
+
 \item{if_plot}{A logic value of whether plot the time series}
 }
 \value{
